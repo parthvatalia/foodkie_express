@@ -11,7 +11,10 @@ import 'package:foodkie_express/models/category.dart';
 import 'package:foodkie_express/widgets/category_card.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fa;
 
+
+import '../../utils/menu_data_loader.dart';
 import 'menu_screen.dart';
 import 'order_history_screen.dart';
 
@@ -32,6 +35,15 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadRestaurantProfile();
+    //loadMenu();
+  }
+
+  loadMenu() async {
+    final user = fa.FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      // Load menu data for this user
+      await MenuDataLoader.loadInitialMenuData(user.uid);
+    }
   }
 
   Future<void> _loadRestaurantProfile() async {

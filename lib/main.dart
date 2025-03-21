@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:foodkie_express/routes.dart';
 import 'package:foodkie_express/utils/theme.dart';
 import 'package:foodkie_express/api/auth_service.dart';
@@ -12,7 +11,6 @@ import 'package:foodkie_express/api/menu_service.dart';
 import 'package:foodkie_express/api/order_service.dart';
 import 'package:foodkie_express/api/profile_service.dart';
 
-// Import any providers/controllers you need
 import 'package:foodkie_express/screens/auth/controllers/auth_provider.dart';
 import 'package:foodkie_express/screens/home/controllers/cart_provider.dart';
 import 'package:foodkie_express/screens/menu_management/controllers/menu_provider.dart';
@@ -29,7 +27,6 @@ void main() async {
     // For iOS
     appleProvider: AppleProvider.appAttest,
   );
-
 
   // Initialize Hive for local storage
   await Hive.initFlutter();
