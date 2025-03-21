@@ -35,7 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadRestaurantProfile();
-    loadMenu();
+    //loadMenu();
     UpdateChecker(context).checkForUpdates();
   }
 

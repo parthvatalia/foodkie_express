@@ -63,7 +63,6 @@ dependencies:
   json_annotation: ^4.8.1
   freezed_annotation: ^2.4.1
   firebase_app_check: ^0.3.2+4
-  flutter_image_compress: ^1.1.3
   http:
 
   # Animations
@@ -94,7 +93,6 @@ dev_dependencies:
   bloc_test: ^9.1.4
 
   # Icons & Assets - Modified version for compatibility
-  flutter_launcher_icons: ^0.13.1
   flutter_native_splash: ^2.3.2
 
 # Flutter Native Splash Configuration
@@ -106,11 +104,6 @@ flutter_native_splash:
 
 
 # Flutter App Icon Configuration
-flutter_launcher_icons:
-  android: "launcher_icon"
-  ios: true
-  image_path: "assets/images/app_icon.png"
-  adaptive_icon_background: "#000000"
 
 flutter:
   uses-material-design: true
