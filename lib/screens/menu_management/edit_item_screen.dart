@@ -61,7 +61,7 @@ class _EditItemScreenState extends State<EditItemScreen> {
     final imagePicker = ImagePicker();
     final pickedFile = await imagePicker.pickImage(
       source: ImageSource.gallery,
-      imageQuality: 80,
+      imageQuality: 40,
     );
 
     if (pickedFile != null) {

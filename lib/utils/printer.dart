@@ -78,40 +78,44 @@ class PrinterService {
             return pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.center,
               children: [
-                if (logoUrl != null && logoUrl.isNotEmpty)
-                  if (logoImage != null)
-                    pw.Container(
-                      width: 60,
-                      height: 60,
-                      child: pw.Image(
-                        pw.MemoryImage(logoImage),
-                        fit: pw.BoxFit.contain,
+                pw.Row(
+                  crossAxisAlignment: pw.CrossAxisAlignment.center,
+                  children: [
+                    if (logoUrl != null && logoUrl.isNotEmpty)
+                      if (logoImage != null)
+                        pw.Container(
+                          width: 40,
+                          height: 40,
+                          child: pw.Image(
+                            pw.MemoryImage(logoImage),
+                            fit: pw.BoxFit.contain,
+                          ),
+                        ),
+                    pw.SizedBox(height: 8),
+
+                    // Restaurant details
+                    pw.Text(
+                      restaurantName,
+                      style: pw.TextStyle(
+                        fontSize: 14,
+                        fontWeight: pw.FontWeight.bold,
                       ),
                     ),
-                pw.SizedBox(height: 8),
-
-                // Restaurant details
-                pw.Text(
-                  restaurantName,
-                  style: pw.TextStyle(
-                    fontSize: 18,
-                    fontWeight: pw.FontWeight.bold,
-                  ),
+                  ],
                 ),
-
                 pw.SizedBox(height: 8),
 
                 // Restaurant address and email if available
                 if (restaurantAddress.isNotEmpty)
                   pw.Text(
                     restaurantAddress,
-                    style: const pw.TextStyle(fontSize: 8),
+                    style: const pw.TextStyle(fontSize: 7),
                     textAlign: pw.TextAlign.center,
                   ),
                 if (restaurantEmail.isNotEmpty)
                   pw.Text(
                     "Email: $restaurantEmail",
-                    style: const pw.TextStyle(fontSize: 9),
+                    style: const pw.TextStyle(fontSize: 7),
                   ),
 
                 pw.SizedBox(height: 10),
@@ -119,7 +123,7 @@ class PrinterService {
                 pw.Text(
                   'Receipt',
                   style: pw.TextStyle(
-                    fontSize: 14,
+                    fontSize: 12,
                     fontWeight: pw.FontWeight.bold,
                   ),
                 ),
@@ -152,8 +156,14 @@ class PrinterService {
                       pw.Row(
                         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                         children: [
-                          pw.Text('$name($quantity)'),
-                          pw.Text('Rs.${itemTotal.toStringAsFixed(2)}'),
+                          pw.Text(
+                            '$name($quantity)',
+                            style: const pw.TextStyle(fontSize: 8),
+                          ),
+                          pw.Text(
+                            'Rs.${itemTotal.toStringAsFixed(2)}',
+                            style: const pw.TextStyle(fontSize: 9),
+                          ),
                         ],
                       ),
 
@@ -162,11 +172,11 @@ class PrinterService {
                         children: [
                           pw.Text(
                             'item Price',
-                            style: const pw.TextStyle(fontSize: 8),
+                            style: const pw.TextStyle(fontSize: 7),
                           ),
                           pw.Text(
                             'Rs.${price.toStringAsFixed(2)}',
-                            style: const pw.TextStyle(fontSize: 8),
+                            style: const pw.TextStyle(fontSize: 7),
                           ),
                         ],
                       ),

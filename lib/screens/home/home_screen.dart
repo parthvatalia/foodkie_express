@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:foodkie_express/screens/home/profile_screen.dart';
 import 'package:provider/provider.dart';
@@ -13,8 +14,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fa;
 
-
 import '../../utils/menu_data_loader.dart';
+import '../../utils/update_checker.dart';
 import 'menu_screen.dart';
 import 'order_history_screen.dart';
 
@@ -30,12 +31,47 @@ class _HomeScreenState extends State<HomeScreen> {
   final PageController _pageController = PageController();
   RestaurantProfile? _restaurantProfile;
   bool _isLoading = true;
-
   @override
   void initState() {
     super.initState();
     _loadRestaurantProfile();
-    //loadMenu();
+    loadMenu();
+    UpdateChecker(context).checkForUpdates();
+  }
+
+  // Add at the top of the file with the other methods
+  static Future<void> setupOrderCounter(String userId) async {
+    try {
+      FirebaseFirestore _firestore = FirebaseFirestore.instance;
+      // Check if counter document already exists
+      final counterDoc =
+          await _firestore
+              .collection('users')
+              .doc(userId)
+              .collection('counters')
+              .doc('orders')
+              .get();
+
+      // Only create if it doesn't exist
+      if (!counterDoc.exists) {
+        await _firestore
+            .collection('users')
+            .doc(userId)
+            .collection('counters')
+            .doc('orders')
+            .set({
+              'currentCount': 0,
+              'createdAt': FieldValue.serverTimestamp(),
+              'updatedAt': FieldValue.serverTimestamp(),
+            });
+
+        debugPrint('Order counter initialized for user $userId');
+      } else {
+        debugPrint('Order counter already exists for user $userId');
+      }
+    } catch (e) {
+      debugPrint('Error setting up order counter: $e');
+    }
   }
 
   loadMenu() async {
@@ -52,14 +88,18 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     try {
-      final profileService = Provider.of<ProfileService>(context, listen: false);
+      final profileService = Provider.of<ProfileService>(
+        context,
+        listen: false,
+      );
       final profile = await profileService.getRestaurantProfile();
 
       setState(() {
         _restaurantProfile = profile;
         _isLoading = false;
       });
-
+      final user = fa.FirebaseAuth.instance.currentUser;
+      await setupOrderCounter(user!.uid);
       // If profile doesn't exist, prompt user to create one
       if (profile == null && mounted) {
         _showCreateProfileDialog();
@@ -84,21 +124,22 @@ class _HomeScreenState extends State<HomeScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('Welcome to Foodkie Express'),
-        content: const Text(
-          'Please set up your restaurant profile to get started.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.pushNamed(context, AppRoutes.profile);
-            },
-            child: const Text('Set Up Profile'),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Welcome to Foodkie Express'),
+            content: const Text(
+              'Please set up your restaurant profile to get started.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.pushNamed(context, AppRoutes.profile);
+                },
+                child: const Text('Set Up Profile'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -122,44 +163,45 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: _isLoading
-            ? const Text('Foodkie Express')
-            : _buildRestaurantTitle(),
+        title:
+            _isLoading
+                ? const Text('Foodkie Express')
+                : _buildRestaurantTitle(),
         elevation: 0,
         actions: [
-          if(_currentIndex != 1)
-          IconButton(
-            icon: Stack(
-              children: [
-                const Icon(Icons.shopping_cart),
-                if (cartProvider.itemCount > 0)
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(1),
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      constraints: const BoxConstraints(
-                        minWidth: 12,
-                        minHeight: 12,
-                      ),
-                      child: Text(
-                        '${cartProvider.itemCount}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 8,
+          if (_currentIndex != 1)
+            IconButton(
+              icon: Stack(
+                children: [
+                  const Icon(Icons.shopping_cart),
+                  if (cartProvider.itemCount > 0)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(1),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(6),
                         ),
-                        textAlign: TextAlign.center,
+                        constraints: const BoxConstraints(
+                          minWidth: 12,
+                          minHeight: 12,
+                        ),
+                        child: Text(
+                          '${cartProvider.itemCount}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 8,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
+              onPressed: () => Navigator.pushNamed(context, AppRoutes.cart),
             ),
-            onPressed: () => Navigator.pushNamed(context, AppRoutes.cart),
-          ),
         ],
       ),
       body: PageView(
@@ -184,22 +226,13 @@ class _HomeScreenState extends State<HomeScreen> {
         selectedItemColor: Theme.of(context).colorScheme.primary,
         unselectedItemColor: Colors.grey,
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(
             icon: Icon(Icons.restaurant_menu),
             label: 'Menu',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: 'Orders',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'Orders'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
     );
@@ -220,11 +253,9 @@ class _HomeScreenState extends State<HomeScreen> {
               width: 30,
               height: 30,
               fit: BoxFit.cover,
-              placeholder: (context, url) => Container(
-                width: 30,
-                height: 30,
-                color: Colors.grey[300],
-              ),
+              placeholder:
+                  (context, url) =>
+                      Container(width: 30, height: 30, color: Colors.grey[300]),
               errorWidget: (context, url, error) => const Icon(Icons.error),
             ),
           ),
@@ -242,77 +273,80 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildHomeTab() {
     return _isLoading
         ? Center(
-      child: SpinKitDoubleBounce(
-        color: Theme.of(context).colorScheme.primary,
-        size: 50.0,
-      ),
-    )
+          child: SpinKitDoubleBounce(
+            color: Theme.of(context).colorScheme.primary,
+            size: 50.0,
+          ),
+        )
         : SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Welcome Card
-          Card(
-            elevation: 4,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    'Welcome to your Foodkie Express!',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Welcome Card
+              Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Welcome to your Foodkie Express!',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Manage your menu, track orders, and more with our efficient tools.',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        onPressed: () => _changePage(1), // Navigate to Menu tab
+                        icon: const Icon(Icons.menu_book),
+                        label: const Text('View Menu'),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Manage your menu, track orders, and more with our efficient tools.',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton.icon(
-                    onPressed: () => _changePage(1), // Navigate to Menu tab
-                    icon: const Icon(Icons.menu_book),
-                    label: const Text('View Menu'),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ),
-          const SizedBox(height: 24),
+              const SizedBox(height: 24),
 
-          // Categories Section
-          Text(
-            'Categories',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 12),
-          _buildCategoriesGrid(),
+              // Categories Section
+              Text(
+                'Categories',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              _buildCategoriesGrid(),
 
-          const SizedBox(height: 24),
+              const SizedBox(height: 24),
 
-          // Quick Actions
-          Text(
-            'Quick Actions',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+              // Quick Actions
+              Text(
+                'Quick Actions',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              _buildQuickActions(),
+            ],
           ),
-          const SizedBox(height: 12),
-          _buildQuickActions(),
-        ],
-      ),
-    );
+        );
   }
 
   Widget _buildCategoriesGrid() {
@@ -320,15 +354,11 @@ class _HomeScreenState extends State<HomeScreen> {
       stream: Provider.of<MenuService>(context).getCategories(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return const Center(child: CircularProgressIndicator());
         }
 
         if (snapshot.hasError) {
-          return Center(
-            child: Text('Error: ${snapshot.error}'),
-          );
+          return Center(child: Text('Error: ${snapshot.error}'));
         }
 
         final categories = snapshot.data ?? [];
@@ -339,17 +369,16 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  const Icon(
-                    Icons.category,
-                    size: 48,
-                    color: Colors.grey,
-                  ),
+                  const Icon(Icons.category, size: 48, color: Colors.grey),
                   const SizedBox(height: 8),
                   const Text('No categories yet'),
                   const SizedBox(height: 8),
                   ElevatedButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, AppRoutes.categoryManagement);
+                      Navigator.pushNamed(
+                        context,
+                        AppRoutes.categoryManagement,
+                      );
                     },
                     child: const Text('Add Categories'),
                   ),
@@ -362,9 +391,10 @@ class _HomeScreenState extends State<HomeScreen> {
         return GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          gridDelegate:  SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            childAspectRatio:MediaQuery.of(context).size.shortestSide <600?  1.5:2.5,
+            childAspectRatio:
+                MediaQuery.of(context).size.shortestSide < 600 ? 1.5 : 2.5,
             crossAxisSpacing: 10,
             mainAxisSpacing: 10,
           ),
@@ -391,7 +421,8 @@ class _HomeScreenState extends State<HomeScreen> {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       crossAxisCount: 2,
-      childAspectRatio: MediaQuery.of(context).size.shortestSide <600?  1.5:2.5,
+      childAspectRatio:
+          MediaQuery.of(context).size.shortestSide < 600 ? 1.5 : 2.5,
       crossAxisSpacing: 10,
       mainAxisSpacing: 10,
       children: [
@@ -405,7 +436,8 @@ class _HomeScreenState extends State<HomeScreen> {
           icon: Icons.category,
           title: 'Manage Categories',
           color: Colors.orange,
-          onTap: () => Navigator.pushNamed(context, AppRoutes.categoryManagement),
+          onTap:
+              () => Navigator.pushNamed(context, AppRoutes.categoryManagement),
         ),
         _actionCard(
           icon: Icons.history,
@@ -431,9 +463,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
@@ -442,11 +472,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                color: color,
-                size: 32,
-              ),
+              Icon(icon, color: color, size: 32),
               const SizedBox(height: 8),
               Text(
                 title,

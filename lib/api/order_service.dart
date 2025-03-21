@@ -33,35 +33,44 @@ class OrderService {
       throw e;
     }
   }
+  // Add this to your OrderService class
   Future<int> getNextOrderNumber() async {
-    try {
-      // Use Firestore transaction to safely increment the counter
-      int orderNumber = 1; // Default starting number
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) throw Exception('User not authenticated');
 
-      await _firestore.runTransaction((transaction) async {
-        // Get reference to the counter document
-        final counterRef = _firestore.collection('counters').doc('orders');
-        final snapshot = await transaction.get(counterRef);
+    int orderNumber = 1; // Default starting value
 
-        if (snapshot.exists) {
-          // Increment existing counter
-          orderNumber = (snapshot.data()?['currentNumber'] ?? 0) + 1;
-          transaction.update(counterRef, {'currentNumber': orderNumber});
-        } else {
-          // Create counter document if it doesn't exist
-          orderNumber = 1;
-          transaction.set(counterRef, {'currentNumber': orderNumber});
-        }
-      });
+    // Use a transaction to safely increment the counter
+    await _firestore.runTransaction((transaction) async {
+      // Get reference to the counter document
+      final counterRef = _firestore
+          .collection('users')
+          .doc(user.uid)
+          .collection('counters')
+          .doc('orders');
 
-      return orderNumber;
-    } catch (e) {
-      debugPrint('Error getting next order number: $e');
+      // Get current counter value
+      final snapshot = await transaction.get(counterRef);
 
-      // Fallback to a timestamp-based number in case of error
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-      return timestamp % 10000; // Use last 4 digits as a fallback
-    }
+      if (snapshot.exists) {
+        // Increment existing counter
+        orderNumber = (snapshot.data()?['currentCount'] ?? 0) + 1;
+        transaction.update(counterRef, {
+          'currentCount': orderNumber,
+          'updatedAt': FieldValue.serverTimestamp()
+        });
+      } else {
+        // Create counter if it doesn't exist (should not happen if setup correctly)
+        orderNumber = 1;
+        transaction.set(counterRef, {
+          'currentCount': orderNumber,
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp()
+        });
+      }
+    });
+
+    return orderNumber;
   }
 
   // Get all orders
