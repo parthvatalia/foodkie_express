@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:flutter/foundation.dart';
+
 import 'package:foodkie_express/routes.dart';
 import 'package:foodkie_express/utils/theme.dart';
 import 'package:foodkie_express/api/auth_service.dart';
@@ -18,8 +20,19 @@ import 'package:foodkie_express/screens/menu_management/controllers/menu_provide
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase
-  await Firebase.initializeApp();
+  if(kIsWeb){
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+          apiKey: "AIzaSyDJu7mqM6ioebiN8eNFfQe1uMSO55FhXb4",
+          projectId: "foodkie-express",
+          storageBucket: "foodkie-express.firebasestorage.app",
+          messagingSenderId: "326810023670",
+          appId: "1:326810023670:android:112e7d7e9223ef2a929ed7",
+      ),
+    );
+  }else{
+    await Firebase.initializeApp();
+  }
 
   await FirebaseAppCheck.instance.activate(
     // For Android
