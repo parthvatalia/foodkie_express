@@ -71,9 +71,6 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   @override
   void initState() {
     super.initState();
-    // Set default date range to last 7 days
-    _endDate = DateTime.now();
-    _startDate = _endDate!.subtract(const Duration(days: 7));
   }
 
   void _showDateRangePicker() async {

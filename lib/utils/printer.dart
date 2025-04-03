@@ -63,172 +63,253 @@ class PrinterService {
       final restaurantEmail = restaurant?['email'] as String? ?? '';
       final logoUrl = restaurant?['logoUrl'] as String?;
 
+      // Calculate subtotal (assumes total might include tax)
+      final subtotal = items.fold<double>(
+        0,
+        (sum, item) =>
+            sum + (item['price'] as double) * (item['quantity'] as int),
+      );
+
+      // Calculate tax (if any)
+      final tax = total - subtotal;
+
       Uint8List? logoImage;
       if (logoUrl != null && logoUrl.isNotEmpty) {
         logoImage = await _getImageFromUrl(logoUrl);
       }
-      // Create PDF document
+
+      // Create PDF document with monospaced font for that receipt look
       final pdf = pw.Document();
+
+      // Define font for the receipt (monospaced for that classic receipt look)
+      final font = pw.Font.courier();
 
       // Add receipt page
       pdf.addPage(
         pw.Page(
-          pageFormat: PdfPageFormat.roll80,
+          theme: pw.ThemeData.withFont(
+            base: font,
+            bold: font,
+            italic: font,
+            boldItalic: font,
+          ),
           build: (pw.Context context) {
-            return pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.center,
-              children: [
-                pw.Row(
-                  crossAxisAlignment: pw.CrossAxisAlignment.center,
-                  children: [
-                    if (logoUrl != null && logoUrl.isNotEmpty)
-                      if (logoImage != null)
-                        pw.Container(
-                          width: 40,
-                          height: 40,
-                          child: pw.Image(
-                            pw.MemoryImage(logoImage),
-                            fit: pw.BoxFit.contain,
-                          ),
-                        ),
-                    pw.SizedBox(height: 8),
+            return pw.Container(
+              child: pw.Center(
+                child: pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.center,
 
-                    // Restaurant details
-                    pw.Text(
-                      restaurantName,
-                      style: pw.TextStyle(
-                        fontSize: 14,
-                        fontWeight: pw.FontWeight.bold,
+                  children: [
+                    pw.Expanded(
+                      child: pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.center,
+                        children: [
+                          // Logo if available
+                          if (logoImage != null)
+                            pw.Container(
+                              width: 100,
+                              height: 50,
+                              alignment: pw.Alignment.center,
+                              child: pw.Image(
+                                pw.MemoryImage(logoImage),
+                                fit: pw.BoxFit.contain,
+                              ),
+                            ),
+
+                          // Restaurant name and address in UPPERCASE
+                          pw.Center(
+                            child: pw.Text(
+                              restaurantName.toUpperCase(),
+                              style: pw.TextStyle(
+                                fontSize: 10,
+                                fontWeight: pw.FontWeight.bold,
+                              ),
+                              textAlign: pw.TextAlign.center,
+                            ),
+                          ),
+
+                          if (restaurantAddress.isNotEmpty)
+                            pw.Center(
+                              child: pw.Text(
+                                restaurantAddress.toUpperCase(),
+                                style: pw.TextStyle(fontSize: 8),
+                                textAlign: pw.TextAlign.center,
+                              ),
+                            ),
+
+                          if (restaurantEmail.isNotEmpty)
+                            pw.Center(
+                              child: pw.Text(
+                                restaurantEmail.toUpperCase(),
+                                style: pw.TextStyle(fontSize: 7),
+                                textAlign: pw.TextAlign.center,
+                              ),
+                            ),
+
+                          pw.SizedBox(height: 10),
+
+                          // Order and host info
+                          pw.Row(
+                            mainAxisAlignment:
+                                pw.MainAxisAlignment.spaceBetween,
+                            children: [
+                              pw.Text(
+                                "ORDER : ${orderNumber ?? '---'}",
+                                style: pw.TextStyle(fontSize: 9),
+                              ),
+                              pw.Text(
+                                DateFormat(
+                                  'MM/dd/yyyy',
+                                ).format(DateTime.parse(timestamp)),
+                                style: pw.TextStyle(fontSize: 9),
+                              ),
+                            ],
+                          ),
+
+                          pw.Row(
+                            mainAxisAlignment: pw.MainAxisAlignment.end,
+                            children: [
+                              pw.Text(
+                                DateFormat(
+                                  'hh:mm a',
+                                ).format(DateTime.parse(timestamp)),
+                                style: pw.TextStyle(fontSize: 9),
+                              ),
+                            ],
+                          ),
+
+                          pw.SizedBox(height: 10),
+
+                          // Items with clear spacing
+                          ...items.map((item) {
+                            final name = item['name'] as String;
+                            final price = item['price'] as double;
+                            final quantity = item['quantity'] as int;
+                            final itemTotal = quantity * price;
+
+                            return pw.Row(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.SizedBox(
+                                  width: 15,
+                                  child: pw.Text(
+                                    "$quantity",
+                                    style: pw.TextStyle(fontSize: 9),
+                                  ),
+                                ),
+                                pw.Expanded(
+                                  child: pw.Text(
+                                    name.toUpperCase(),
+                                    style: pw.TextStyle(fontSize: 9),
+                                  ),
+                                ),
+                                pw.SizedBox(
+                                  width: 60,
+                                  child: pw.Text(
+                                    "rs.${itemTotal.toStringAsFixed(2)}",
+                                    style: pw.TextStyle(fontSize: 9),
+                                    textAlign: pw.TextAlign.right,
+                                  ),
+                                ),
+                              ],
+                            );
+                          }).toList(),
+
+                          pw.SizedBox(height: 10),
+
+                          // Totals section
+                          pw.Row(
+                            mainAxisAlignment:
+                                pw.MainAxisAlignment.spaceBetween,
+                            children: [
+                              pw.Text(
+                                "SUBTOTAL",
+                                style: pw.TextStyle(fontSize: 9),
+                              ),
+                              pw.Text(
+                                "rs.${subtotal.toStringAsFixed(2)}",
+                                style: pw.TextStyle(fontSize: 9),
+                                textAlign: pw.TextAlign.right,
+                              ),
+                            ],
+                          ),
+
+                          pw.Row(
+                            mainAxisAlignment:
+                                pw.MainAxisAlignment.spaceBetween,
+                            children: [
+                              pw.Text(
+                                "TOTAL:",
+                                style: pw.TextStyle(fontSize: 9),
+                              ),
+                              pw.Text(
+                                "rs.${total.toStringAsFixed(2)}",
+                                style: pw.TextStyle(fontSize: 9),
+                                textAlign: pw.TextAlign.right,
+                              ),
+                            ],
+                          ),
+
+                          pw.SizedBox(height: 10),
+
+                          // Signature line
+                          pw.Text(
+                            "..............................",
+                            style: pw.TextStyle(fontSize: 9),
+                          ),
+
+                          pw.SizedBox(height: 20),
+
+                          // Footer
+                          pw.Center(
+                            child: pw.Text(
+                              "CUSTOMER COPY",
+                              style: pw.TextStyle(fontSize: 9),
+                              textAlign: pw.TextAlign.center,
+                            ),
+                          ),
+
+                          pw.Center(
+                            child: pw.Text(
+                              "Thank you for your order!",
+                              style: pw.TextStyle(fontSize: 9),
+                              textAlign: pw.TextAlign.center,
+                            ),
+                          ),
+
+                          pw.Center(
+                            child: pw.Text(
+                              "Visit again",
+                              style: pw.TextStyle(fontSize: 9),
+                              textAlign: pw.TextAlign.center,
+                            ),
+                          ),
+                          pw.SizedBox(height: 20),
+                          pw.Row(
+                            mainAxisAlignment: pw.MainAxisAlignment.end,
+                            children: [
+                              pw.Text(
+                                "Made by Foodkie Express",
+                                style: pw.TextStyle(fontSize: 7),
+                                textAlign: pw.TextAlign.center,
+                              ),
+                            ],
+                          ),
+
+                          // Notes section if there are any
+                          if (notes != null && notes.isNotEmpty) ...[
+                            pw.SizedBox(height: 10),
+                            pw.Text(
+                              "NOTES: $notes",
+                              style: pw.TextStyle(fontSize: 9),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                   ],
                 ),
-                pw.SizedBox(height: 8),
-
-                // Restaurant address and email if available
-                if (restaurantAddress.isNotEmpty)
-                  pw.Text(
-                    restaurantAddress,
-                    style: const pw.TextStyle(fontSize: 7),
-                    textAlign: pw.TextAlign.center,
-                  ),
-                if (restaurantEmail.isNotEmpty)
-                  pw.Text(
-                    "Email: $restaurantEmail",
-                    style: const pw.TextStyle(fontSize: 7),
-                  ),
-
-                pw.SizedBox(height: 10),
-
-                pw.Text(
-                  'Receipt',
-                  style: pw.TextStyle(
-                    fontSize: 12,
-                    fontWeight: pw.FontWeight.bold,
-                  ),
-                ),
-
-                // Order number if available
-                if (orderNumber != null && orderNumber.isNotEmpty)
-                  pw.Text(
-                    "Order #$orderNumber",
-                    style: const pw.TextStyle(fontSize: 10),
-                  ),
-
-                pw.Text(
-                  DateFormat(
-                    'dd/MM/yyyy HH:mm',
-                  ).format(DateTime.parse(timestamp)),
-                  style: const pw.TextStyle(fontSize: 10),
-                ),
-                pw.Divider(),
-
-                // Items
-                ...items.map((item) {
-                  final name = item['name'] as String;
-                  final price = item['price'] as double;
-                  final quantity = item['quantity'] as int;
-                  final itemTotal = quantity * price;
-
-                  return pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Row(
-                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                        children: [
-                          pw.Text(
-                            '$name($quantity)',
-                            style: const pw.TextStyle(fontSize: 8),
-                          ),
-                          pw.Text(
-                            'Rs.${itemTotal.toStringAsFixed(2)}',
-                            style: const pw.TextStyle(fontSize: 9),
-                          ),
-                        ],
-                      ),
-
-                      pw.Row(
-                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                        children: [
-                          pw.Text(
-                            'item Price',
-                            style: const pw.TextStyle(fontSize: 7),
-                          ),
-                          pw.Text(
-                            'Rs.${price.toStringAsFixed(2)}',
-                            style: const pw.TextStyle(fontSize: 7),
-                          ),
-                        ],
-                      ),
-
-                      pw.SizedBox(height: 5),
-                    ],
-                  );
-                }).toList(),
-
-                pw.Divider(),
-
-                // Total
-                pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                  children: [
-                    pw.Text(
-                      'TOTAL',
-                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                    ),
-                    pw.Text(
-                      'Rs.${total.toStringAsFixed(2)}',
-                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                    ),
-                  ],
-                ),
-
-                // Notes
-                if (notes != null && notes.isNotEmpty) ...[
-                  pw.SizedBox(height: 10),
-                  pw.Text('Notes:', style: const pw.TextStyle(fontSize: 10)),
-                  pw.Text(notes, style: const pw.TextStyle(fontSize: 10)),
-                ],
-
-                // Footer
-                pw.SizedBox(height: 20),
-                pw.Text(
-                  'Thank you for your order!',
-                  style: const pw.TextStyle(fontSize: 10),
-                ),
-                pw.SizedBox(height: 5),
-                pw.Text('Visit again', style: const pw.TextStyle(fontSize: 9)),
-                pw.SizedBox(height: 10),
-
-                // "Made by Foodkie Express" on right side with small font
-                pw.Align(
-                  alignment: pw.Alignment.bottomRight,
-                  child: pw.Text(
-                    'Made by Foodkie Express',
-                    style: const pw.TextStyle(fontSize: 7),
-                  ),
-                ),
-              ],
+              ),
             );
           },
         ),
@@ -247,7 +328,6 @@ class PrinterService {
         return await Printing.layoutPdf(
           onLayout: (PdfPageFormat format) async => pdf.save(),
           name: 'Foodkie Express Receipt',
-          format: PdfPageFormat.roll80,
         );
       }
     } catch (e) {
@@ -262,46 +342,111 @@ class PrinterService {
       // Create PDF document
       final pdf = pw.Document();
 
+      // Define font for the receipt
+      final font = pw.Font.courier();
+
       // Add test page
       pdf.addPage(
         pw.Page(
-          pageFormat: PdfPageFormat.roll80,
+          theme: pw.ThemeData.withFont(
+            base: font,
+            bold: font,
+            italic: font,
+            boldItalic: font,
+          ),
           build: (pw.Context context) {
             return pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.center,
               children: [
-                pw.Text(
-                  'Foodkie Express',
-                  style: pw.TextStyle(
-                    fontSize: 18,
-                    fontWeight: pw.FontWeight.bold,
+                pw.Center(
+                  child: pw.Text(
+                    'FOODKIE EXPRESS',
+                    style: pw.TextStyle(fontSize: 10),
+                    textAlign: pw.TextAlign.center,
                   ),
                 ),
+
+                pw.Center(
+                  child: pw.Text(
+                    '123 FOOD STREET, CITY',
+                    style: pw.TextStyle(fontSize: 9),
+                    textAlign: pw.TextAlign.center,
+                  ),
+                ),
+
                 pw.SizedBox(height: 10),
-                pw.Text(
-                  'Test Print',
-                  style: pw.TextStyle(
-                    fontSize: 14,
-                    fontWeight: pw.FontWeight.bold,
+
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text("ORDER : TEST", style: pw.TextStyle(fontSize: 9)),
+                    pw.Text(
+                      DateFormat('MM/dd/yyyy').format(DateTime.now()),
+                      style: pw.TextStyle(fontSize: 9),
+                    ),
+                  ],
+                ),
+
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text("HOST : TEST", style: pw.TextStyle(fontSize: 9)),
+                    pw.Text(
+                      DateFormat('hh:mm a').format(DateTime.now()),
+                      style: pw.TextStyle(fontSize: 9),
+                    ),
+                  ],
+                ),
+
+                pw.SizedBox(height: 10),
+
+                pw.Row(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.SizedBox(
+                      width: 15,
+                      child: pw.Text("1", style: pw.TextStyle(fontSize: 9)),
+                    ),
+                    pw.Expanded(
+                      child: pw.Text(
+                        "TEST ITEM",
+                        style: pw.TextStyle(fontSize: 9),
+                      ),
+                    ),
+                    pw.SizedBox(
+                      width: 60,
+                      child: pw.Text(
+                        "₹ 10.00",
+                        style: pw.TextStyle(fontSize: 9),
+                        textAlign: pw.TextAlign.right,
+                      ),
+                    ),
+                  ],
+                ),
+
+                pw.SizedBox(height: 15),
+
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text("TOTAL:", style: pw.TextStyle(fontSize: 9)),
+                    pw.Text(
+                      "₹ 10.00",
+                      style: pw.TextStyle(fontSize: 9),
+                      textAlign: pw.TextAlign.right,
+                    ),
+                  ],
+                ),
+
+                pw.SizedBox(height: 20),
+
+                pw.Center(
+                  child: pw.Text(
+                    "PRINTER TEST COMPLETED",
+                    style: pw.TextStyle(fontSize: 9),
+                    textAlign: pw.TextAlign.center,
                   ),
                 ),
-                pw.Divider(),
-                pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                  children: [
-                    pw.Text('Date'),
-                    pw.Text(DateFormat('dd/MM/yyyy').format(DateTime.now())),
-                  ],
-                ),
-                pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                  children: [
-                    pw.Text('Time'),
-                    pw.Text(DateFormat('HH:mm').format(DateTime.now())),
-                  ],
-                ),
-                pw.Divider(),
-                pw.Text('Printer test completed'),
               ],
             );
           },
@@ -321,7 +466,6 @@ class PrinterService {
         return await Printing.layoutPdf(
           onLayout: (PdfPageFormat format) async => pdf.save(),
           name: 'Foodkie Express Test Print',
-          format: PdfPageFormat.roll80,
         );
       }
     } catch (e) {
