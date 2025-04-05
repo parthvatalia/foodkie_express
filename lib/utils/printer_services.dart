@@ -1,16 +1,18 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'dart:convert' show utf8, ascii;
 
 class PrinterService {
   static final PrinterService _instance = PrinterService._internal();
+
   factory PrinterService() => _instance;
+
   PrinterService._internal();
 
   BluetoothConnection? _connection;
@@ -31,22 +33,20 @@ class PrinterService {
 
     if (address == null || name == null) return null;
 
-    return {
-      'address': address,
-      'name': name,
-    };
+    return {'address': address, 'name': name};
   }
 
   // Comprehensive Bluetooth permission request
   Future<bool> requestBluetoothPermissions() async {
     if (Platform.isAndroid) {
       // Request multiple permissions
-      final permissionStatuses = await [
-        Permission.bluetooth,
-        Permission.bluetoothScan,
-        Permission.bluetoothConnect,
-        Permission.location,
-      ].request();
+      final permissionStatuses =
+          await [
+            Permission.bluetooth,
+            Permission.bluetoothScan,
+            Permission.bluetoothConnect,
+            Permission.location,
+          ].request();
 
       // Check if all permissions are granted
       return permissionStatuses.values.every((status) => status.isGranted);
@@ -76,9 +76,9 @@ class PrinterService {
       }
 
       // Get bonded devices with timeout
-      return await FlutterBluetoothSerial.instance
-          .getBondedDevices()
-          .timeout(const Duration(seconds: 10));
+      return await FlutterBluetoothSerial.instance.getBondedDevices().timeout(
+        const Duration(seconds: 10),
+      );
     } catch (e) {
       debugPrint('Error getting Bluetooth devices: $e');
       return [];
@@ -103,11 +103,12 @@ class PrinterService {
 
     try {
       // Attempt to establish a connection with a timeout
-      final connection = await BluetoothConnection.toAddress(printerInfo['address']!)
-          .timeout(const Duration(seconds: 5));
+      final connection = await BluetoothConnection.toAddress(
+        printerInfo['address']!,
+      ).timeout(const Duration(seconds: 5));
 
       // If connection is successful, immediately close it
-       connection.dispose();
+      connection.dispose();
       return true;
     } on TimeoutException {
       debugPrint('Printer connection timeout');
@@ -119,7 +120,10 @@ class PrinterService {
   }
 
   // Advanced print method with retry and error handling
-  Future<bool> printReceipt(Map<String, dynamic> data, {int maxRetries = 3}) async {
+  Future<bool> printReceipt(
+    Map<String, dynamic> data, {
+    int maxRetries = 3,
+  }) async {
     for (int attempt = 1; attempt <= maxRetries; attempt++) {
       BluetoothConnection? connection;
       try {
@@ -131,8 +135,9 @@ class PrinterService {
         }
 
         // Establish connection with robust error handling
-        connection = await BluetoothConnection.toAddress(printerInfo['address']!)
-            .timeout(const Duration(seconds: 10));
+        connection = await BluetoothConnection.toAddress(
+          printerInfo['address']!,
+        ).timeout(const Duration(seconds: 10));
 
         // Prepare print commands with more robust ESC/POS commands
         List<int> commands = _preparePrintCommands(data);
@@ -142,6 +147,7 @@ class PrinterService {
 
         // Send data with chunking to prevent buffer overflow
         await _sendDataInChunks(connection, commands);
+        await Future.delayed(const Duration(seconds: 1));
 
         // Send cut and feed commands
         _sendCutPaperCommands(connection);
@@ -168,7 +174,7 @@ class PrinterService {
   // Send initialization commands
   void _sendInitializationCommands(BluetoothConnection connection) {
     final initCommands = [
-      0x1B, 0x40,   // ESC @ - Initialize printer
+      0x1B, 0x40, // ESC @ - Initialize printer
       0x1B, 0x4D, 0x00, // Select character code table
       0x1B, 0x21, 0x00, // Cancel bold, underline, double-height, double-width
     ];
@@ -179,27 +185,31 @@ class PrinterService {
   void _sendCutPaperCommands(BluetoothConnection connection) {
     final cutCommands = [
       0x0A, 0x0A, 0x0A, // Feed 3 lines
-      0x1D, 0x56, 0x01  // Partial cut
+      0x1D, 0x56, 0x01, // Partial cut
     ];
     connection.output.add(Uint8List.fromList(cutCommands));
   }
 
   // Chunk data sending to prevent buffer overflow
-  Future<void> _sendDataInChunks(BluetoothConnection connection, List<int> data, {int chunkSize = 256}) async {
+  Future<void> _sendDataInChunks(
+    BluetoothConnection connection,
+    List<int> data, {
+    int chunkSize = 128,
+  }) async {
     for (int i = 0; i < data.length; i += chunkSize) {
-      final chunk = data.sublist(
-          i,
-          i + chunkSize > data.length ? data.length : i + chunkSize
-      );
+      final end = (i + chunkSize < data.length) ? i + chunkSize : data.length;
+      final chunk = data.sublist(i, end);
+
       connection.output.add(Uint8List.fromList(chunk));
       await connection.output.allSent;
 
-      // Small delay to prevent overwhelming the printer
-      await Future.delayed(const Duration(milliseconds: 50));
+      // Add a small delay to prevent buffer overflow
+      await Future.delayed(const Duration(milliseconds: 100));
     }
   }
 
   // Comprehensive print command preparation
+  // Replace the _preparePrintCommands method in printer_services.dart with this improved version
   List<int> _preparePrintCommands(Map<String, dynamic> data) {
     List<int> commands = [];
 
@@ -208,41 +218,49 @@ class PrinterService {
     const GS = 0x1D;
     const LF = 0x0A;
 
+    // Initialization sequence
+    commands.addAll([ESC, 0x40]); // Initialize printer
+
     // Text alignment commands
     final centerAlign = [ESC, 0x61, 0x01]; // Center alignment
-    final leftAlign = [ESC, 0x61, 0x00];   // Left alignment
+    final leftAlign = [ESC, 0x61, 0x00]; // Left alignment
 
-    // Font modifications
-    final normalFont = [ESC, 0x21, 0x00];  // Normal font
-    final boldFont = [ESC, 0x21, 0x08];    // Bold font
-    final doubleHeight = [ESC, 0x21, 0x10]; // Double height
+    // Font commands
+    final normalFont = [ESC, 0x21, 0x00]; // Normal font
+    final boldOn = [ESC, 0x45, 0x01]; // Bold on
+    final boldOff = [ESC, 0x45, 0x00]; // Bold off
 
-    // Add center alignment and bold font for header
+    // Add center alignment for header
     commands.addAll(centerAlign);
-    commands.addAll(boldFont);
+    commands.addAll(boldOn);
 
     // Restaurant details
-    final restaurantName = (data['restaurant']?['name'] ?? 'Foodkie Express').toUpperCase();
-    commands.addAll(utf8.encode(restaurantName));
+    final restaurantName =
+        (data['restaurant']?['name'] ?? 'Foodkie Express').toUpperCase();
+    commands.addAll(ascii.encode(restaurantName));
     commands.add(LF);
-
-    // Reset to normal font
-    commands.addAll(normalFont);
+    commands.addAll(boldOff);
 
     // Order details
     final orderNumber = data['orderNumber'] ?? 'N/A';
-    final timestamp = data['timestamp'] != null
-        ? DateFormat('dd/MM/yyyy HH:mm').format(DateTime.parse(data['timestamp']))
-        : DateTime.now().toString();
-
-    commands.addAll(utf8.encode('Order #: $orderNumber'));
+    commands.addAll(ascii.encode('Order #: $orderNumber'));
     commands.add(LF);
-    commands.addAll(utf8.encode('Date: $timestamp'));
+
+    final timestamp =
+        data['timestamp'] != null
+            ? DateFormat(
+              'dd/MM/yyyy HH:mm',
+            ).format(DateTime.parse(data['timestamp']))
+            : DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now());
+    commands.addAll(ascii.encode('Date: $timestamp'));
     commands.add(LF);
 
     // Separator
-    commands.addAll(utf8.encode('--------------------------------'));
+    commands.addAll(ascii.encode('--------------------------------'));
     commands.add(LF);
+
+    // Switch to left alignment for items
+    commands.addAll(leftAlign);
 
     // Items
     final items = data['items'] ?? [];
@@ -253,25 +271,33 @@ class PrinterService {
       final total = quantity * price;
 
       final itemLine = '$quantity x $name';
-      commands.addAll(utf8.encode(itemLine));
+      commands.addAll(ascii.encode(itemLine));
       commands.add(LF);
-      commands.addAll(utf8.encode('Price: ₹${total.toStringAsFixed(2)}'));
+      commands.addAll(ascii.encode('  Price: Rs.${total.toStringAsFixed(2)}'));
       commands.add(LF);
     }
 
     // Separator
-    commands.addAll(utf8.encode('--------------------------------'));
+    commands.addAll(ascii.encode('--------------------------------'));
     commands.add(LF);
 
     // Total
     final total = data['total'] ?? 0.0;
-    commands.addAll(boldFont);
-    commands.addAll(utf8.encode('TOTAL: ₹${total.toStringAsFixed(2)}'));
+    commands.addAll(centerAlign);
+    commands.addAll(boldOn);
+    commands.addAll(ascii.encode('TOTAL: Rs.${total.toStringAsFixed(2)}'));
+    commands.add(LF);
+    commands.addAll(boldOff);
+
+    // Footer
+    commands.addAll(centerAlign);
+    commands.addAll(ascii.encode('Thank you for your order!'));
+    commands.add(LF);
     commands.add(LF);
 
-    // Reset to normal font and left alignment
-    commands.addAll(normalFont);
-    commands.addAll(leftAlign);
+    // Feed and cut
+    commands.addAll([LF, LF, LF, LF]); // Feed 4 lines
+    commands.addAll([GS, 0x56, 0x00]); // Full cut
 
     return commands;
   }
@@ -283,15 +309,12 @@ class PrinterService {
       final testData = {
         'items': [
           {'name': 'Test Item 1', 'quantity': 2, 'price': 10.50},
-          {'name': 'Test Item 2', 'quantity': 1, 'price': 15.75}
+          {'name': 'Test Item 2', 'quantity': 1, 'price': 15.75},
         ],
         'total': 36.75,
         'timestamp': DateTime.now().toString(),
-        'restaurant': {
-          'name': 'Foodkie Express',
-          'address': 'Test Address'
-        },
-        'orderNumber': 'TEST-001'
+        'restaurant': {'name': 'Foodkie Express', 'address': 'Test Address'},
+        'orderNumber': 'TEST-001',
       };
 
       return await printReceipt(testData);
