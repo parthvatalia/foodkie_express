@@ -7,9 +7,11 @@ import 'package:foodkie_express/api/order_service.dart';
 import 'package:foodkie_express/api/profile_service.dart';
 import 'package:foodkie_express/models/order.dart';
 import 'package:foodkie_express/models/profile.dart';
-import 'package:foodkie_express/utils/printer.dart';
 import 'package:foodkie_express/widgets/animated_button.dart';
 import 'package:lottie/lottie.dart';
+
+import '../../../utils/printer_services.dart';
+import '../../settings/bluetooth_printer_screen.dart';
 
 class OrderDetailsScreen extends StatefulWidget {
   final String? orderId;
@@ -69,16 +71,92 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     }
   }
 
+
+
   Future<void> _printReceipt() async {
+    final printerService = PrinterService();
+
     if (_order == null) return;
 
     setState(() {
       _isPrinting = true;
     });
 
-    try {
-      final printerService = PrinterService();
+    bool bluetoothEnabled = await printerService.isBluetoothEnabled();
+    if (!bluetoothEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enable Bluetooth to print')),
+      );
+      return;
+    }
 
+    // Check if a printer is saved
+    Map<String, String>? savedPrinter = await printerService.getSavedBluetoothPrinter();
+    if (savedPrinter == null) {
+      // Ask user if they want to set up a printer
+      bool setupPrinter = await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('No Printer Set Up'),
+          content: const Text('You need to set up a printer to print receipts. Would you like to do that now?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('No'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Yes'),
+            ),
+          ],
+        ),
+      ) ?? false;
+
+      if (setupPrinter && context.mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const BluetoothPrinterSelectionScreen(),
+          ),
+        );
+      }
+      return;
+    }
+
+    // Check if printer is connected
+    bool connected = await printerService.isPrinterConnected();
+    if (!connected) {
+      // Ask user if they want to set up a different printer
+      bool setupPrinter = await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Printer Not Connected'),
+          content: Text('Your printer "${savedPrinter['name']}" is not connected. Make sure it is turned on and within range, or select a different printer.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Select Printer'),
+            ),
+          ],
+        ),
+      ) ?? false;
+
+      if (setupPrinter && context.mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const BluetoothPrinterSelectionScreen(),
+          ),
+        );
+      }
+      return;
+    }
+
+    try {
       final items = _order!.items.map((item) => {
         'name': item.name,
         'price': item.price,

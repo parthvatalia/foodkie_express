@@ -4,10 +4,11 @@ import 'package:foodkie_express/api/order_service.dart';
 import 'package:foodkie_express/models/order.dart';
 import 'package:foodkie_express/routes.dart';
 import 'package:foodkie_express/screens/home/controllers/cart_provider.dart';
-import 'package:foodkie_express/utils/printer.dart';
 import 'package:foodkie_express/widgets/animated_button.dart';
 import 'package:foodkie_express/widgets/cart_item.dart';
 import 'package:lottie/lottie.dart';
+
+import '../../utils/printer_services.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({Key? key}) : super(key: key);
