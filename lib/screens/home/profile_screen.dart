@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:foodkie_express/screens/settings/bluetooth_printer_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:foodkie_express/api/profile_service.dart';
@@ -88,7 +89,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final pickedFile = await imagePicker.pickImage(
       source: ImageSource.gallery,
       imageQuality: 40,
-
     );
 
     if (pickedFile != null) {
@@ -256,11 +256,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   padding: const EdgeInsets.all(0),
                                   margin: EdgeInsets.zero,
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.primary,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
                                     shape: BoxShape.circle,
                                   ),
                                   child: IconButton(
-                                    icon: const Icon(Icons.camera_alt, size: 25),
+                                    icon: const Icon(
+                                      Icons.camera_alt,
+                                      size: 25,
+                                    ),
                                     color: Colors.white,
                                     onPressed: _pickImage,
                                     tooltip: 'Change Logo',
@@ -275,9 +279,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         // Basic Information
                         Text(
                           'Basic Information',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 16),
 
@@ -331,9 +334,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         // Address
                         Text(
                           'Address Information',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 16),
                         // Street Address
@@ -400,9 +402,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         // Description
                         Text(
                           'Additional Information',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 16),
 
@@ -477,15 +478,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                           child: Column(
                             children: [
-                              // ListTile(
-                              //   leading: const Icon(Icons.lock),
-                              //   title: const Text('Change Phone Number'),
-                              //   trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                              //   onTap: () {
-                              //     // Navigate to change phone number screen
-                              //   },
-                              // ),
-                              // const Divider(),
+                              ListTile(
+                                leading: const Icon(Icons.print),
+                                title: const Text('Printer setup'),
+                                trailing: const Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: 16,
+                                ),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (context) =>
+                                              BluetoothPrinterSelectionScreen(),
+                                    ),
+                                  );
+                                },
+                              ),
+                              const Divider(),
                               ListTile(
                                 leading: const Icon(Icons.logout),
                                 title: const Text('Sign Out'),

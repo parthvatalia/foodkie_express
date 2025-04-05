@@ -9,6 +9,13 @@ import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class PrinterService {
+  static final PrinterService _instance = PrinterService._internal();
+  factory PrinterService() => _instance;
+  PrinterService._internal();
+
+  BluetoothConnection? _connection;
+  StreamSubscription? _connectionStateSubscription;
+
   // Save Bluetooth printer address
   Future<void> saveBluetoothPrinter(String address, String name) async {
     final prefs = await SharedPreferences.getInstance();
@@ -30,317 +37,266 @@ class PrinterService {
     };
   }
 
+  // Comprehensive Bluetooth permission request
   Future<bool> requestBluetoothPermissions() async {
-    // For Android 12+
     if (Platform.isAndroid) {
-      Map<Permission, PermissionStatus> statuses = await [
+      // Request multiple permissions
+      final permissionStatuses = await [
         Permission.bluetooth,
-        Permission.bluetoothConnect,
         Permission.bluetoothScan,
+        Permission.bluetoothConnect,
         Permission.location,
       ].request();
 
       // Check if all permissions are granted
-      bool allGranted = true;
-      statuses.forEach((permission, status) {
-        if (status != PermissionStatus.granted) {
-          allGranted = false;
-        }
-      });
-
-      return allGranted;
+      return permissionStatuses.values.every((status) => status.isGranted);
     }
-
-    // For iOS or older Android versions
-    return true;
+    return true; // For iOS or other platforms
   }
 
+  // Bluetooth availability check with more robust error handling
   Future<bool> isBluetoothEnabled() async {
-    await requestBluetoothPermissions();
-    return await FlutterBluetoothSerial.instance.isEnabled ?? false;
+    try {
+      await requestBluetoothPermissions();
+      return await FlutterBluetoothSerial.instance.isEnabled ?? false;
+    } catch (e) {
+      debugPrint('Bluetooth availability check failed: $e');
+      return false;
+    }
   }
 
+  // Enhanced device discovery
   Future<List<BluetoothDevice>> getAvailableBluetoothDevices() async {
     try {
-      // Request permissions first
+      // Ensure permissions are granted
       bool permissionsGranted = await requestBluetoothPermissions();
       if (!permissionsGranted) {
         debugPrint('Bluetooth permissions not granted');
         return [];
       }
 
-      // Get bonded Bluetooth devices
-      FlutterBluetoothSerial bluetooth = FlutterBluetoothSerial.instance;
-      List<BluetoothDevice> devices = await bluetooth.getBondedDevices();
-      return devices;
+      // Get bonded devices with timeout
+      return await FlutterBluetoothSerial.instance
+          .getBondedDevices()
+          .timeout(const Duration(seconds: 10));
     } catch (e) {
       debugPrint('Error getting Bluetooth devices: $e');
       return [];
     }
   }
 
-  // Request to enable Bluetooth
+  // Bluetooth enable request with feedback
   Future<bool> requestEnableBluetooth() async {
-    await FlutterBluetoothSerial.instance.requestEnable();
-    return await isBluetoothEnabled();
+    try {
+      await FlutterBluetoothSerial.instance.requestEnable();
+      return await isBluetoothEnabled();
+    } catch (e) {
+      debugPrint('Bluetooth enable request failed: $e');
+      return false;
+    }
   }
 
-  // Check if printer is connected
+  // Robust printer connection check
   Future<bool> isPrinterConnected() async {
     final printerInfo = await getSavedBluetoothPrinter();
     if (printerInfo == null) return false;
 
     try {
-      // Try to establish a connection
-      BluetoothConnection connection = await BluetoothConnection.toAddress(
-        printerInfo['address']!,
-      );
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Attempt to establish a connection with a timeout
+      final connection = await BluetoothConnection.toAddress(printerInfo['address']!)
+          .timeout(const Duration(seconds: 5));
 
-      // If we get here, connection was successful
-      connection.dispose();
+      // If connection is successful, immediately close it
+       connection.dispose();
       return true;
+    } on TimeoutException {
+      debugPrint('Printer connection timeout');
+      return false;
     } catch (e) {
       debugPrint('Printer connection check failed: $e');
       return false;
     }
   }
 
-  // Print receipt via Bluetooth
-  Future<bool> printReceipt(Map<String, dynamic> data) async {
-    try {
-      // Get printer address
-      final printerInfo = await getSavedBluetoothPrinter();
-      if (printerInfo == null) {
-        debugPrint('No Bluetooth printer configured');
-        return false;
+  // Advanced print method with retry and error handling
+  Future<bool> printReceipt(Map<String, dynamic> data, {int maxRetries = 3}) async {
+    for (int attempt = 1; attempt <= maxRetries; attempt++) {
+      BluetoothConnection? connection;
+      try {
+        // Validate printer configuration
+        final printerInfo = await getSavedBluetoothPrinter();
+        if (printerInfo == null) {
+          debugPrint('No Bluetooth printer configured');
+          return false;
+        }
+
+        // Establish connection with robust error handling
+        connection = await BluetoothConnection.toAddress(printerInfo['address']!)
+            .timeout(const Duration(seconds: 10));
+
+        // Prepare print commands with more robust ESC/POS commands
+        List<int> commands = _preparePrintCommands(data);
+
+        // Send initialization commands
+        _sendInitializationCommands(connection);
+
+        // Send data with chunking to prevent buffer overflow
+        await _sendDataInChunks(connection, commands);
+
+        // Send cut and feed commands
+        _sendCutPaperCommands(connection);
+
+        // Close connection
+        connection.dispose();
+
+        return true;
+      } on TimeoutException {
+        debugPrint('Printer connection timeout (Attempt $attempt)');
+      } catch (e) {
+        debugPrint('Printer error (Attempt $attempt): $e');
+      } finally {
+        connection?.dispose();
       }
 
-      final printerAddress = printerInfo['address']!;
+      // Wait before retrying
+      await Future.delayed(const Duration(seconds: 2));
+    }
 
-      // Prepare receipt data
-      final items = data['items'] as List<dynamic>;
-      final total = data['total'] as double;
-      final notes = data['notes'] as String?;
-      final timestamp = data['timestamp'] as String;
-      final orderNumber = data['orderNumber'] as String?;
+    return false;
+  }
 
-      // Get restaurant info
-      final restaurant = data['restaurant'] as Map<String, dynamic>?;
-      final restaurantName = restaurant?['name'] as String? ?? 'FOODKIE EXPRESS';
-      final restaurantAddress = restaurant?['address'] as String? ?? '';
+  // Send initialization commands
+  void _sendInitializationCommands(BluetoothConnection connection) {
+    final initCommands = [
+      0x1B, 0x40,   // ESC @ - Initialize printer
+      0x1B, 0x4D, 0x00, // Select character code table
+      0x1B, 0x21, 0x00, // Cancel bold, underline, double-height, double-width
+    ];
+    connection.output.add(Uint8List.fromList(initCommands));
+  }
 
-      // Calculate subtotal
-      final subtotal = items.fold<double>(
-        0,
-            (sum, item) => sum + (item['price'] as double) * (item['quantity'] as int),
+  // Send paper cut and feed commands
+  void _sendCutPaperCommands(BluetoothConnection connection) {
+    final cutCommands = [
+      0x0A, 0x0A, 0x0A, // Feed 3 lines
+      0x1D, 0x56, 0x01  // Partial cut
+    ];
+    connection.output.add(Uint8List.fromList(cutCommands));
+  }
+
+  // Chunk data sending to prevent buffer overflow
+  Future<void> _sendDataInChunks(BluetoothConnection connection, List<int> data, {int chunkSize = 256}) async {
+    for (int i = 0; i < data.length; i += chunkSize) {
+      final chunk = data.sublist(
+          i,
+          i + chunkSize > data.length ? data.length : i + chunkSize
       );
-
-      // ESC/POS Commands for Centering
-      const ESC = 0x1B;
-      const LF = 0x0A;
-      const TEXT_ALIGN_CENTER = [ESC, 0x61, 0x01]; // Center alignment
-
-      List<int> commands = [];
-
-      // Reset printer
-      commands.addAll([ESC, 0x40]);
-
-      // Center align everything
-      commands.addAll(TEXT_ALIGN_CENTER);
-
-      // Restaurant name
-      commands.addAll(utf8.encode(restaurantName));
-      commands.add(LF);
-
-      // Restaurant address
-      if (restaurantAddress.isNotEmpty) {
-        commands.addAll(utf8.encode(restaurantAddress));
-        commands.add(LF);
-      }
-
-      // Order details
-      commands.addAll(utf8.encode("ORDER #: ${orderNumber ?? '---'}"));
-      commands.add(LF);
-
-      // Date
-      String dateStr = DateFormat('MM/dd/yyyy hh:mm a').format(DateTime.parse(timestamp));
-      commands.addAll(utf8.encode(dateStr));
-      commands.add(LF);
-
-      // Separator
-      commands.addAll(utf8.encode("--------------------------------"));
-      commands.add(LF);
-
-      // Process items (centered)
-      for (var item in items) {
-        final name = (item['name'] as String);
-        final price = item['price'] as double;
-        final quantity = item['quantity'] as int;
-        final itemTotal = quantity * price;
-
-        String itemLine = "$quantity x $name";
-        commands.addAll(utf8.encode(itemLine));
-        commands.add(LF);
-
-        String priceLine = "Rs. ${itemTotal.toStringAsFixed(2)}";
-        commands.addAll(utf8.encode(priceLine));
-        commands.add(LF);
-      }
-
-      // Separator
-      commands.addAll(utf8.encode("--------------------------------"));
-      commands.add(LF);
-
-      // Totals (centered)
-      commands.addAll(utf8.encode("SUBTOTAL: Rs. ${subtotal.toStringAsFixed(2)}"));
-      commands.add(LF);
-
-      commands.addAll(utf8.encode("TOTAL: Rs. ${total.toStringAsFixed(2)}"));
-      commands.add(LF);
-
-      // Notes if any
-      if (notes != null && notes.isNotEmpty) {
-        commands.add(LF);
-        commands.addAll(utf8.encode("Notes: $notes"));
-        commands.add(LF);
-      }
-
-      // Footer
-      commands.add(LF);
-      commands.addAll(utf8.encode("THANK YOU FOR YOUR ORDER"));
-      commands.add(LF);
-      commands.addAll(utf8.encode("POWERED BY FOODKIE EXPRESS"));
-
-      // Extra line feeds
-      commands.add(LF);
-      commands.add(LF);
-      commands.add(LF);
-      commands.add(LF);
-
-      // Connect to printer
-      debugPrint('Connecting to printer: $printerAddress');
-      final connection = await BluetoothConnection.toAddress(printerAddress);
-      debugPrint('Connected to printer');
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      // Send data
-      connection.output.add(Uint8List.fromList(commands));
+      connection.output.add(Uint8List.fromList(chunk));
       await connection.output.allSent;
 
-      // Close connection
-      await Future.delayed(const Duration(seconds: 1));
-      connection.dispose();
-
-      return true;
-    } catch (e) {
-      debugPrint('Error printing: $e');
-      return false;
+      // Small delay to prevent overwhelming the printer
+      await Future.delayed(const Duration(milliseconds: 50));
     }
   }
 
-  // Text wrapping utility method
-  List<String> _wrapText(String text, int width) {
-    List<String> lines = [];
+  // Comprehensive print command preparation
+  List<int> _preparePrintCommands(Map<String, dynamic> data) {
+    List<int> commands = [];
 
-    while (text.length > width) {
-      // Find the last space before width limit
-      int spaceIndex = text.substring(0, width).lastIndexOf(' ');
+    // ESC/POS command constants
+    const ESC = 0x1B;
+    const GS = 0x1D;
+    const LF = 0x0A;
 
-      if (spaceIndex == -1) {
-        // No space found, force break at width
-        lines.add(text.substring(0, width));
-        text = text.substring(width);
-      } else {
-        // Break at the last space
-        lines.add(text.substring(0, spaceIndex));
-        text = text.substring(spaceIndex + 1);
-      }
+    // Text alignment commands
+    final centerAlign = [ESC, 0x61, 0x01]; // Center alignment
+    final leftAlign = [ESC, 0x61, 0x00];   // Left alignment
+
+    // Font modifications
+    final normalFont = [ESC, 0x21, 0x00];  // Normal font
+    final boldFont = [ESC, 0x21, 0x08];    // Bold font
+    final doubleHeight = [ESC, 0x21, 0x10]; // Double height
+
+    // Add center alignment and bold font for header
+    commands.addAll(centerAlign);
+    commands.addAll(boldFont);
+
+    // Restaurant details
+    final restaurantName = (data['restaurant']?['name'] ?? 'Foodkie Express').toUpperCase();
+    commands.addAll(utf8.encode(restaurantName));
+    commands.add(LF);
+
+    // Reset to normal font
+    commands.addAll(normalFont);
+
+    // Order details
+    final orderNumber = data['orderNumber'] ?? 'N/A';
+    final timestamp = data['timestamp'] != null
+        ? DateFormat('dd/MM/yyyy HH:mm').format(DateTime.parse(data['timestamp']))
+        : DateTime.now().toString();
+
+    commands.addAll(utf8.encode('Order #: $orderNumber'));
+    commands.add(LF);
+    commands.addAll(utf8.encode('Date: $timestamp'));
+    commands.add(LF);
+
+    // Separator
+    commands.addAll(utf8.encode('--------------------------------'));
+    commands.add(LF);
+
+    // Items
+    final items = data['items'] ?? [];
+    for (var item in items) {
+      final name = item['name'] ?? 'Unknown Item';
+      final quantity = item['quantity'] ?? 1;
+      final price = item['price'] ?? 0.0;
+      final total = quantity * price;
+
+      final itemLine = '$quantity x $name';
+      commands.addAll(utf8.encode(itemLine));
+      commands.add(LF);
+      commands.addAll(utf8.encode('Price: ₹${total.toStringAsFixed(2)}'));
+      commands.add(LF);
     }
 
-    // Add the remaining text
-    if (text.isNotEmpty) {
-      lines.add(text);
-    }
+    // Separator
+    commands.addAll(utf8.encode('--------------------------------'));
+    commands.add(LF);
 
-    return lines;
+    // Total
+    final total = data['total'] ?? 0.0;
+    commands.addAll(boldFont);
+    commands.addAll(utf8.encode('TOTAL: ₹${total.toStringAsFixed(2)}'));
+    commands.add(LF);
+
+    // Reset to normal font and left alignment
+    commands.addAll(normalFont);
+    commands.addAll(leftAlign);
+
+    return commands;
   }
 
-  // Test print method with centered content
+  // Test print method
   Future<bool> printTest() async {
     try {
-      // Check Bluetooth status
-      bool bluetoothEnabled = await isBluetoothEnabled();
-      if (!bluetoothEnabled) {
-        debugPrint('Bluetooth is not enabled');
-        return false;
-      }
+      // Prepare a comprehensive test receipt
+      final testData = {
+        'items': [
+          {'name': 'Test Item 1', 'quantity': 2, 'price': 10.50},
+          {'name': 'Test Item 2', 'quantity': 1, 'price': 15.75}
+        ],
+        'total': 36.75,
+        'timestamp': DateTime.now().toString(),
+        'restaurant': {
+          'name': 'Foodkie Express',
+          'address': 'Test Address'
+        },
+        'orderNumber': 'TEST-001'
+      };
 
-      // Get printer info
-      final printerInfo = await getSavedBluetoothPrinter();
-      if (printerInfo == null) {
-        debugPrint('No Bluetooth printer configured');
-        return false;
-      }
-
-      final printerAddress = printerInfo['address']!;
-
-      // ESC/POS Commands
-      const ESC = 0x1B;
-      const GS = 0x1D;
-      const LF = 0x0A;
-      const TEXT_ALIGN_CENTER = [ESC, 0x61, 0x01]; // Center alignment
-      const RESET = [ESC, 0x40]; // Reset printer
-      const CUT = [GS, 0x56, 0x00]; // Paper cut
-
-      // Create command buffer
-      List<int> commands = [];
-
-      // Reset and center align
-      commands.addAll(RESET);
-      commands.addAll(TEXT_ALIGN_CENTER);
-
-      // Test header (centered)
-      commands.addAll(utf8.encode('PRINTER TEST'));
-      commands.add(LF);
-
-      // Date/time (centered)
-      commands.addAll(utf8.encode(DateFormat('MM/dd/yyyy hh:mm a').format(DateTime.now())));
-      commands.add(LF);
-      commands.add(LF);
-
-      // Centered test messages
-      commands.addAll(utf8.encode('If this prints with proper'));
-      commands.add(LF);
-      commands.addAll(utf8.encode('center alignment,'));
-      commands.add(LF);
-      commands.addAll(utf8.encode('your printer is configured correctly'));
-      commands.add(LF);
-
-      // Separator
-      commands.addAll(utf8.encode('--------------------------------'));
-      commands.add(LF);
-
-      // Extra feeds and cut
-      commands.add(LF);
-      commands.add(LF);
-      commands.addAll(CUT);
-
-      // Connect to printer
-      debugPrint('Connecting to printer for test: $printerAddress');
-      BluetoothConnection connection = await BluetoothConnection.toAddress(printerAddress);
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      // Send data
-      connection.output.add(Uint8List.fromList(commands));
-      await connection.output.allSent;
-
-      // Close connection
-      connection.dispose();
-
-      return true;
+      return await printReceipt(testData);
     } catch (e) {
-      debugPrint('Error printing test via Bluetooth: $e');
+      debugPrint('Test print failed: $e');
       return false;
     }
   }
