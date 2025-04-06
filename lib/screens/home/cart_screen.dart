@@ -21,7 +21,8 @@ class CartScreen extends StatefulWidget {
 class _CartScreenState extends State<CartScreen> {
   final TextEditingController _notesController = TextEditingController();
   final TextEditingController _customerNameController = TextEditingController();
-  final TextEditingController _customerPhoneController = TextEditingController();
+  final TextEditingController _customerPhoneController =
+      TextEditingController();
 
   bool _isProcessing = false;
   bool _showCustomerDetails = false;
@@ -34,7 +35,6 @@ class _CartScreenState extends State<CartScreen> {
     _customerPhoneController.dispose();
     super.dispose();
   }
-
 
   Future<void> _placeOrder() {
     // Show bottom sheet for customer details before placing order
@@ -59,15 +59,18 @@ class _CartScreenState extends State<CartScreen> {
 
         try {
           // Create order items
-          final orderItems = cartProvider.items.map((item) =>
-              OrderItem(
-                id: item.id,
-                name: item.name,
-                price: item.price,
-                quantity: item.quantity,
-                notes: item.notes,
-              )
-          ).toList();
+          final orderItems =
+              cartProvider.items
+                  .map(
+                    (item) => OrderItem(
+                      id: item.id,
+                      name: item.name,
+                      price: item.price,
+                      quantity: item.quantity,
+                      notes: item.notes,
+                    ),
+                  )
+                  .toList();
 
           // Create order with customer details and payment method
           final newOrder = OrderModel.create(
@@ -80,7 +83,10 @@ class _CartScreenState extends State<CartScreen> {
           );
 
           // Save to database
-          final orderService = Provider.of<OrderService>(context, listen: false);
+          final orderService = Provider.of<OrderService>(
+            context,
+            listen: false,
+          );
           final orderId = await orderService.createOrder(newOrder);
 
           // Clear cart
@@ -129,12 +135,17 @@ class _CartScreenState extends State<CartScreen> {
         try {
           final printerService = PrinterService();
 
-          final items = cartProvider.items.map((item) => {
-            'name': item.name,
-            'price': item.price,
-            'quantity': item.quantity,
-            'total': item.price * item.quantity,
-          }).toList();
+          final items =
+              cartProvider.items
+                  .map(
+                    (item) => {
+                      'name': item.name,
+                      'price': item.price,
+                      'quantity': item.quantity,
+                      'total': item.price * item.quantity,
+                    },
+                  )
+                  .toList();
 
           final receiptData = {
             'items': items,
@@ -180,138 +191,156 @@ class _CartScreenState extends State<CartScreen> {
       },
     );
   }
-
   Future<void> _showCustomerDetailsBottomSheet({
     required Future<void> Function() onConfirm,
   }) {
+    // Create a local variable to track payment method changes
+    String localPaymentMethod = _paymentMethod;
+
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-          left: 16,
-          right: 16,
-          top: 16,
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'Customer Details',
-                style: Theme.of(context).textTheme.headlineSmall,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-
-              // Customer Name
-              TextFormField(
-                controller: _customerNameController,
-                decoration: InputDecoration(
-                  labelText: 'Customer Name',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter customer name';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Customer Phone
-              TextFormField(
-                controller: _customerPhoneController,
-                decoration: InputDecoration(
-                  labelText: 'Phone Number',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                keyboardType: TextInputType.phone,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter phone number';
-                  }
-                  // Basic phone number validation
-                  if (!RegExp(r'^[0-9]{10}$').hasMatch(value.trim())) {
-                    return 'Please enter a valid 10-digit phone number';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Payment Method
-              Text(
-                'Payment Method',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              Row(
+      builder: (bottomSheetContext) => StatefulBuilder(
+        builder: (context, setModalState) => Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(bottomSheetContext).viewInsets.bottom,
+            left: 16,
+            right: 16,
+            top: 16,
+          ),
+          child: Form(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Expanded(
-                    child: RadioListTile<String>(
-                      title: const Text('Cash'),
-                      value: 'Cash',
-                      groupValue: _paymentMethod,
-                      onChanged: (value) {
-                        setState(() {
-                          _paymentMethod = value!;
-                        });
-                      },
-                      contentPadding: EdgeInsets.zero,
-                    ),
+                  Text(
+                    'Customer Details',
+                    style: Theme.of(bottomSheetContext).textTheme.headlineSmall,
+                    textAlign: TextAlign.center,
                   ),
-                  Expanded(
-                    child: RadioListTile<String>(
-                      title: const Text('UPI'),
-                      value: 'UPI',
-                      groupValue: _paymentMethod,
-                      onChanged: (value) {
-                        setState(() {
-                          _paymentMethod = value!;
-                        });
-                      },
-                      contentPadding: EdgeInsets.zero,
+                  const SizedBox(height: 16),
+
+                  // Customer Name
+                  TextFormField(
+                    controller: _customerNameController,
+                    decoration: InputDecoration(
+                      labelText: 'Customer Name',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Please enter customer name';
+                      }
+                      return null;
+                    },
                   ),
+                  const SizedBox(height: 16),
+
+                  // Customer Phone
+                  TextFormField(
+                    controller: _customerPhoneController,
+                    decoration: InputDecoration(
+                      labelText: 'Phone Number',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    keyboardType: TextInputType.phone,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Please enter phone number';
+                      }
+                      // Basic phone number validation
+                      if (!RegExp(r'^[0-9]{10}$').hasMatch(value.trim())) {
+                        return 'Please enter a valid 10-digit phone number';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Payment Method
+                  Text(
+                    'Payment Method',
+                    style: Theme.of(bottomSheetContext).textTheme.titleMedium,
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: RadioListTile<String>(
+                          title: const Text('Cash'),
+                          value: 'Cash',
+                          groupValue: localPaymentMethod,
+                          onChanged: (value) {
+                            setModalState(() {
+                              localPaymentMethod = value!;
+                            });
+                            // Update the state in the parent widget
+                            setState(() {
+                              _paymentMethod = value!;
+                            });
+                          },
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                      ),
+                      Expanded(
+                        child: RadioListTile<String>(
+                          title: const Text('UPI'),
+                          value: 'UPI',
+                          groupValue: localPaymentMethod,
+                          onChanged: (value) {
+                            setModalState(() {
+                              localPaymentMethod = value!;
+                            });
+                            // Update the state in the parent widget
+                            setState(() {
+                              _paymentMethod = value!;
+                            });
+                          },
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Order Notes
+                  TextField(
+                    controller: _notesController,
+                    decoration: InputDecoration(
+                      labelText: 'Order Notes',
+                      hintText: 'Add any special instructions...',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    maxLines: 2,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Confirm Button
+                  ElevatedButton(
+                    onPressed: () {
+                      // Close the bottom sheet
+                      Navigator.pop(bottomSheetContext);
+
+                      // Use a microtask to ensure state is updated
+                      Future.microtask(() {
+                        onConfirm();
+                      });
+                    },
+                    child: const Text('Confirm'),
+                  ),
+                  const SizedBox(height: 16),
                 ],
               ),
-              const SizedBox(height: 16),
-
-              // Order Notes
-              TextField(
-                controller: _notesController,
-                decoration: InputDecoration(
-                  labelText: 'Order Notes',
-                  hintText: 'Add any special instructions...',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                maxLines: 2,
-              ),
-              const SizedBox(height: 16),
-
-              // Confirm Button
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  // Call the provided confirmation callback
-                  onConfirm();
-                },
-                child: const Text('Confirm'),
-              ),
-              const SizedBox(height: 16),
-            ],
+            ),
           ),
         ),
       ),
@@ -322,63 +351,63 @@ class _CartScreenState extends State<CartScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Lottie.asset(
-                  'assets/animations/order_success.json',
-                  height: 150,
-                  repeat: false,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Order Placed!',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Order #$orderId has been placed successfully.',
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      builder:
+          (context) => Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        Navigator.pop(context);
-                      },
-                      child: const Text('Back to Menu'),
+                    Lottie.asset(
+                      'assets/animations/order_success.json',
+                      height: 150,
+                      repeat: false,
                     ),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        Navigator.pop(context);
-                        Navigator.pushNamed(
-                          context,
-                          AppRoutes.orderDetails,
-                          arguments: {'orderId': orderId},
-                        );
-                      },
-                      child: const Text('View Order'),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Order Placed!',
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Order #$orderId has been placed successfully.',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            Navigator.pop(context);
+                          },
+                          child: const Text('Back to Menu'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            Navigator.pop(context);
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.orderDetails,
+                              arguments: {'orderId': orderId},
+                            );
+                          },
+                          child: const Text('View Order'),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
     );
 
     setState(() {
@@ -395,7 +424,10 @@ class _CartScreenState extends State<CartScreen> {
           IconButton(
             icon: const Icon(Icons.delete_outline),
             onPressed: () {
-              final cartProvider = Provider.of<CartProvider>(context, listen: false);
+              final cartProvider = Provider.of<CartProvider>(
+                context,
+                listen: false,
+              );
               if (cartProvider.items.isNotEmpty) {
                 _showClearCartDialog();
               }
@@ -447,17 +479,20 @@ class _CartScreenState extends State<CartScreen> {
                     final item = cartProvider.items[index];
                     return CartItemWidget(
                       item: item,
-                      onIncrement: () => cartProvider.incrementQuantity(item.id),
-                      onDecrement: () => cartProvider.decrementQuantity(item.id),
+                      onIncrement:
+                          () => cartProvider.incrementQuantity(item.id),
+                      onDecrement:
+                          () => cartProvider.decrementQuantity(item.id),
                       onRemove: () => cartProvider.removeItem(item.id),
-                      onNotesChanged: (notes) => cartProvider.updateItemNotes(item.id, notes),
+                      onNotesChanged:
+                          (notes) =>
+                              cartProvider.updateItemNotes(item.id, notes),
                     );
                   },
                 ),
               ),
 
               // Customer details and payment section
-
 
               // Summary and actions
               Container(
@@ -495,20 +530,20 @@ class _CartScreenState extends State<CartScreen> {
                           children: [
                             Text(
                               'Total:',
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(fontWeight: FontWeight.bold),
                             ),
                             Text(
                               '₹${cartProvider.totalPrice.toStringAsFixed(2)}',
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              style: Theme.of(
+                                context,
+                              ).textTheme.titleLarge?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: Theme.of(context).colorScheme.primary,
                               ),
                             ),
                           ],
                         ),
-
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -520,8 +555,14 @@ class _CartScreenState extends State<CartScreen> {
                           child: AnimatedButton(
                             onPressed: _isProcessing ? null : _printReceipt,
                             isLoading: _isProcessing,
-                            backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-                            foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
+                            backgroundColor:
+                                Theme.of(
+                                  context,
+                                ).colorScheme.secondaryContainer,
+                            foregroundColor:
+                                Theme.of(
+                                  context,
+                                ).colorScheme.onSecondaryContainer,
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: const [
@@ -557,26 +598,27 @@ class _CartScreenState extends State<CartScreen> {
   void _showClearCartDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Clear Cart'),
-        content: const Text('Are you sure you want to clear all items from your cart?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Provider.of<CartProvider>(context, listen: false).clearCart();
-            },
-            child: const Text('Clear'),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Clear Cart'),
+            content: const Text(
+              'Are you sure you want to clear all items from your cart?',
             ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Provider.of<CartProvider>(context, listen: false).clearCart();
+                },
+                child: const Text('Clear'),
+                style: TextButton.styleFrom(foregroundColor: Colors.red),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 }

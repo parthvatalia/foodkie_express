@@ -286,11 +286,11 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               // Welcome Card
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                padding: const EdgeInsets.symmetric(horizontal: 8.0,vertical: 8),
                 child: Card(
                   elevation: 4,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
@@ -299,15 +299,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Text(
                           'Welcome to your Foodkie Express!',
-                          style: Theme.of(context).textTheme.titleLarge
+                          style: Theme.of(context).textTheme.bodyLarge
                               ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           'Manage your menu, track orders, and more with our efficient tools.',
                           style: Theme.of(context).textTheme.bodyMedium,
+                          textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 8),
                         ElevatedButton.icon(
                           onPressed:
                               () => _changePage(1), // Navigate to Menu tab
@@ -325,22 +325,22 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
 
               // Categories Section
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
                 child: Text(
                   'Categories',
                   style: Theme.of(
                     context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               _buildCategoriesList(),
 
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
 
               // Quick Actions
               Padding(
@@ -349,7 +349,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   'Quick Actions',
                   style: Theme.of(
                     context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(height: 8),
@@ -492,7 +492,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),

@@ -142,17 +142,39 @@ class _EditBillScreenState extends State<EditBillScreen> {
       return;
     }
 
-    // Show confirmation dialog with customer details
-    final result = await showDialog<bool>(
+    // Show bottom sheet with customer details
+    final result = await showModalBottomSheet<bool>(
       context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(20),
+        ),
+      ),
       builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: Text('Confirm Order Details'),
-          content: SingleChildScrollView(
+        builder: (context, setState) => Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 16,
+            right: 16,
+            top: 16,
+          ),
+          child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // Bottom Sheet Header
+                Center(
+                  child: Text(
+                    'Confirm Order Details',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
                 // Customer Name
                 TextField(
                   controller: _customerNameController,
@@ -263,43 +285,33 @@ class _EditBillScreenState extends State<EditBillScreen> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 16),
+
+                // Confirm and Cancel Buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: const Text('Cancel'),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // Validate customer name and phone number
+                          Navigator.of(context).pop(true);
+                        },
+                        child: const Text('Confirm'),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
               ],
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                // Validate customer name and phone number
-                if (_customerNameController.text.trim().isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Please enter customer name'),
-                      backgroundColor: Colors.orange,
-                    ),
-                  );
-                  return;
-                }
-
-                if (_customerPhoneController.text.trim().isEmpty ||
-                    !RegExp(r'^[0-9]{10}$').hasMatch(_customerPhoneController.text.trim())) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Please enter a valid 10-digit phone number'),
-                      backgroundColor: Colors.orange,
-                    ),
-                  );
-                  return;
-                }
-
-                Navigator.of(context).pop(true);
-              },
-              child: const Text('Confirm'),
-            ),
-          ],
         ),
       ),
     );
