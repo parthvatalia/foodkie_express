@@ -1,4 +1,3 @@
-
 // This screen is referenced in the routes but needs to be created
 import 'package:animated_snack_bar/animated_snack_bar.dart';
 import 'package:flutter/material.dart';
@@ -58,7 +57,10 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
       }
 
       // Load restaurant profile
-      final profileService = Provider.of<ProfileService>(context, listen: false);
+      final profileService = Provider.of<ProfileService>(
+        context,
+        listen: false,
+      );
       final profile = await profileService.getRestaurantProfile();
 
       setState(() {
@@ -73,8 +75,6 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
       });
     }
   }
-
-
 
   Future<void> _printReceipt() async {
     final printerService = PrinterService();
@@ -92,33 +92,39 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
         type: AnimatedSnackBarType.info,
         mobileSnackBarPosition: MobileSnackBarPosition.bottom,
         desktopSnackBarPosition: DesktopSnackBarPosition.bottomCenter,
-        duration: Duration(seconds: 2),
+        duration: const Duration(seconds: 2),
       ).show(context);
 
       return;
     }
 
     // Check if a printer is saved
-    Map<String, String>? savedPrinter = await printerService.getSavedBluetoothPrinter();
+    Map<String, String>? savedPrinter =
+        await printerService.getSavedBluetoothPrinter();
     if (savedPrinter == null) {
       // Ask user if they want to set up a printer
-      bool setupPrinter = await showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('No Printer Set Up'),
-          content: const Text('You need to set up a printer to print receipts. Would you like to do that now?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('No'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Yes'),
-            ),
-          ],
-        ),
-      ) ?? false;
+      bool setupPrinter =
+          await showDialog(
+            context: context,
+            builder:
+                (context) => AlertDialog(
+                  title: const Text('No Printer Set Up'),
+                  content: const Text(
+                    'You need to set up a printer to print receipts. Would you like to do that now?',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text('No'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text('Yes'),
+                    ),
+                  ],
+                ),
+          ) ??
+          false;
 
       if (setupPrinter && context.mounted) {
         Navigator.push(
@@ -135,23 +141,28 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     bool connected = await printerService.isPrinterConnected();
     if (!connected) {
       // Ask user if they want to set up a different printer
-      bool setupPrinter = await showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Printer Not Connected'),
-          content: Text('Your printer "${savedPrinter['name']}" is not connected. Make sure it is turned on and within range, or select a different printer.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Select Printer'),
-            ),
-          ],
-        ),
-      ) ?? false;
+      bool setupPrinter =
+          await showDialog(
+            context: context,
+            builder:
+                (context) => AlertDialog(
+                  title: const Text('Printer Not Connected'),
+                  content: Text(
+                    'Your printer "${savedPrinter['name']}" is not connected. Make sure it is turned on and within range, or select a different printer.',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text('Select Printer'),
+                    ),
+                  ],
+                ),
+          ) ??
+          false;
 
       if (setupPrinter && context.mounted) {
         Navigator.push(
@@ -165,19 +176,25 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     }
 
     try {
-      final items = _order!.items.map((item) => {
-        'name': item.name,
-        'price': item.price,
-        'quantity': item.quantity,
-        'total': item.price * item.quantity,
-      }).toList();
+      final items =
+          _order!.items
+              .map(
+                (item) => {
+                  'name': item.name,
+                  'price': item.price,
+                  'quantity': item.quantity,
+                  'total': item.price * item.quantity,
+                },
+              )
+              .toList();
 
       // Add restaurant information to receipt data
       final receiptData = {
         'items': items,
         'total': _order!.totalAmount,
         'notes': _order!.notes,
-        'timestamp': _order!.createdAt?.toDate().toString() ?? DateTime.now().toString(),
+        'timestamp':
+            _order!.createdAt?.toDate().toString() ?? DateTime.now().toString(),
         // Include restaurant information
         'restaurant': {
           'name': _profile?.name ?? 'Foodkie Express',
@@ -192,13 +209,14 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
 
       if (mounted) {
         AnimatedSnackBar.material(
-          success
-              ? 'Receipt printed successfully'
-              : 'Failed to print receipt',
-          type:success? AnimatedSnackBarType.success:AnimatedSnackBarType.error,
+          success ? 'Receipt printed successfully' : 'Failed to print receipt',
+          type:
+              success
+                  ? AnimatedSnackBarType.success
+                  : AnimatedSnackBarType.error,
           mobileSnackBarPosition: MobileSnackBarPosition.bottom,
           desktopSnackBarPosition: DesktopSnackBarPosition.bottomCenter,
-          duration: Duration(seconds: 2),
+          duration: const Duration(seconds: 2),
         ).show(context);
       }
     } catch (e) {
@@ -254,9 +272,9 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-            _order != null
-                ? 'Order #${_order!.orderNumber ?? _order!.id.substring(0, 6)}'
-                : 'Order Details'
+          _order != null
+              ? 'Order #${_order!.orderNumber ?? _order!.id.substring(0, 6)}'
+              : 'Order Details',
         ),
         actions: [
           if (_order != null)
@@ -265,30 +283,16 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
               onPressed: _isPrinting ? null : _printReceipt,
               tooltip: 'Print Receipt',
             ),
-          if (_order != null && (_order!.status == 'pending' || _order!.status == 'processing'))
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () {
-                Navigator.pushReplacementNamed(
-                  context,
-                  AppRoutes.editBill,
-                  arguments: {'orderId': widget.orderId},
-                );
-              },
-              tooltip: 'Edit Bill',
-            ),
-
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _errorMessage != null
-          ? _buildErrorView()
-          : _order != null
-          ? _buildOrderDetails()
-          : const Center(
-        child: Text('No order data available'),
-      ),
+      body:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _errorMessage != null
+              ? _buildErrorView()
+              : _order != null
+              ? _buildOrderDetails()
+              : const Center(child: Text('No order data available')),
     );
   }
 
@@ -297,11 +301,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.error_outline,
-            size: 64,
-            color: Colors.red,
-          ),
+          const Icon(Icons.error_outline, size: 64, color: Colors.red),
           const SizedBox(height: 16),
           Text(
             'Error Loading Order',
@@ -316,10 +316,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: _loadData,
-            child: const Text('Retry'),
-          ),
+          ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
         ],
       ),
     );
@@ -327,20 +324,25 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
 
   Widget _buildOrderDetails() {
     // Format timestamps if available
-    final createdAt = _order!.createdAt != null
-        ? DateFormat('MMM dd, yyyy • hh:mm a').format(_order!.createdAt!.toDate())
-        : 'N/A';
+    final createdAt =
+        _order!.createdAt != null
+            ? DateFormat(
+              'MMM dd, yyyy • hh:mm a',
+            ).format(_order!.createdAt!.toDate())
+            : 'N/A';
 
-    final updatedAt = _order!.updatedAt != null
-        ? DateFormat('MMM dd, yyyy • hh:mm a').format(_order!.updatedAt!.toDate())
-        : 'N/A';
+    final updatedAt =
+        _order!.updatedAt != null
+            ? DateFormat(
+              'MMM dd, yyyy • hh:mm a',
+            ).format(_order!.updatedAt!.toDate())
+            : 'N/A';
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Order Header
           Card(
             margin: const EdgeInsets.only(bottom: 16),
             child: Padding(
@@ -401,9 +403,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                         children: [
                           Text(
                             'Updated:',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.grey[600],
-                            ),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: Colors.grey[600]),
                           ),
                           Text(
                             updatedAt,
@@ -422,7 +423,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    if (_profile!.address != null && _profile!.address!.isNotEmpty)
+                    if (_profile!.address != null &&
+                        _profile!.address!.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
                         child: Text(
@@ -435,13 +437,41 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
               ),
             ),
           ),
-
+          if (_order!.customerName!.isNotEmpty ||
+              _order!.customerPhone!.isNotEmpty)
+            Card(
+              margin: const EdgeInsets.only(bottom: 16),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (_order!.customerName!.isNotEmpty)
+                      Text(
+                        _order!.customerName.toString(),
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    if (_order!.customerPhone!.isNotEmpty) ...[
+                      SizedBox(height: 8),
+                      Text(
+                        '${_order!.customerPhone}',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w300,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
           // Order Items
           Text(
             'Order Items',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Card(
@@ -458,23 +488,22 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                     item.name,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  subtitle: item.notes != null && item.notes!.isNotEmpty
-                      ? Text(
-                    'Note: ${item.notes}',
-                    style: TextStyle(
-                      fontStyle: FontStyle.italic,
-                      color: Colors.grey[600],
-                    ),
-                  )
-                      : null,
+                  subtitle:
+                      item.notes != null && item.notes!.isNotEmpty
+                          ? Text(
+                            'Note: ${item.notes}',
+                            style: TextStyle(
+                              fontStyle: FontStyle.italic,
+                              color: Colors.grey[600],
+                            ),
+                          )
+                          : null,
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         '${item.quantity} x ',
-                        style: TextStyle(
-                          color: Colors.grey[700],
-                        ),
+                        style: TextStyle(color: Colors.grey[700]),
                       ),
                       Text(
                         '₹${item.price.toStringAsFixed(2)}',
@@ -494,9 +523,9 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
           if (_order!.notes != null && _order!.notes!.isNotEmpty) ...[
             Text(
               'Order Notes',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Card(
@@ -511,9 +540,9 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
           // Total Summary
           Text(
             'Order Summary',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Card(
@@ -534,7 +563,9 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text('Total Quantity:'),
-                      Text('${_order!.items.fold(0, (sum, item) => sum + item.quantity)}'),
+                      Text(
+                        '${_order!.items.fold(0, (sum, item) => sum + item.quantity)}',
+                      ),
                     ],
                   ),
                   const Divider(height: 24),
@@ -543,13 +574,14 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                     children: [
                       Text(
                         'Total Amount:',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       Text(
                         '₹${_order!.totalAmount.toStringAsFixed(2)}',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        style: Theme.of(
+                          context,
+                        ).textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).colorScheme.primary,
                         ),
@@ -561,19 +593,40 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
             ),
           ),
 
-
           // Print Button
-          AnimatedButton(
-            onPressed: _isPrinting ? null : _printReceipt,
-            isLoading: _isPrinting,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Icon(Icons.print),
-                SizedBox(width: 8),
-                Text('Print Receipt'),
-              ],
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: AnimatedButton(
+                  onPressed: () {
+                    Navigator.pushReplacementNamed(
+                      context,
+                      AppRoutes.editBill,
+                      arguments: {'orderId': widget.orderId},
+                    );
+                  },
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [Text('Add Food')],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: AnimatedButton(
+                  onPressed: _isPrinting ? null : _printReceipt,
+                  isLoading: _isPrinting,
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.print),
+                      SizedBox(width: 8),
+                      Text('Print Receipt'),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 24),
         ],
