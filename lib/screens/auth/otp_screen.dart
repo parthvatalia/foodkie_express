@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:animated_snack_bar/animated_snack_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -121,12 +122,13 @@ class _OTPScreenState extends State<OTPScreen> {
 
       // Show success message
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('OTP resent successfully'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        AnimatedSnackBar.material(
+          'OTP resent successfully',
+          type: AnimatedSnackBarType.success,
+          mobileSnackBarPosition: MobileSnackBarPosition.bottom,
+          desktopSnackBarPosition: DesktopSnackBarPosition.bottomCenter,
+          duration: Duration(seconds: 2),
+        ).show(context);
       }
     } catch (e) {
       // Show error

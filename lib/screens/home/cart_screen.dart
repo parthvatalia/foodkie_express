@@ -1,3 +1,4 @@
+import 'package:animated_snack_bar/animated_snack_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:foodkie_express/api/order_service.dart';
@@ -19,137 +20,302 @@ class CartScreen extends StatefulWidget {
 
 class _CartScreenState extends State<CartScreen> {
   final TextEditingController _notesController = TextEditingController();
+  final TextEditingController _customerNameController = TextEditingController();
+  final TextEditingController _customerPhoneController = TextEditingController();
+
   bool _isProcessing = false;
+  bool _showCustomerDetails = false;
+  String _paymentMethod = 'Cash';
 
   @override
   void dispose() {
     _notesController.dispose();
+    _customerNameController.dispose();
+    _customerPhoneController.dispose();
     super.dispose();
   }
 
-  Future<void> _placeOrder() async {
-    final cartProvider = Provider.of<CartProvider>(context, listen: false);
 
-    if (cartProvider.items.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Cart is empty'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      return;
-    }
+  Future<void> _placeOrder() {
+    // Show bottom sheet for customer details before placing order
+    return _showCustomerDetailsBottomSheet(
+      onConfirm: () async {
+        final cartProvider = Provider.of<CartProvider>(context, listen: false);
 
-    setState(() {
-      _isProcessing = true;
-    });
+        if (cartProvider.items.isEmpty) {
+          AnimatedSnackBar.material(
+            'Cart is empty',
+            type: AnimatedSnackBarType.info,
+            mobileSnackBarPosition: MobileSnackBarPosition.bottom,
+            desktopSnackBarPosition: DesktopSnackBarPosition.bottomCenter,
+            duration: Duration(seconds: 2),
+          ).show(context);
+          return;
+        }
 
-    try {
-      // Create order items
-      final orderItems = cartProvider.items.map((item) =>
-          OrderItem(
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity,
-            notes: item.notes,
-          )
-      ).toList();
+        setState(() {
+          _isProcessing = true;
+        });
 
-      // Create order
-      final newOrder = OrderModel.create(
-        items: orderItems,
-        totalAmount: cartProvider.totalPrice,
-        notes: _notesController.text.trim(),
-      );
+        try {
+          // Create order items
+          final orderItems = cartProvider.items.map((item) =>
+              OrderItem(
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                quantity: item.quantity,
+                notes: item.notes,
+              )
+          ).toList();
 
-      // Save to database
-      final orderService = Provider.of<OrderService>(context, listen: false);
-      final orderId = await orderService.createOrder(newOrder);
+          // Create order with customer details and payment method
+          final newOrder = OrderModel.create(
+            items: orderItems,
+            totalAmount: cartProvider.totalPrice,
+            notes: _notesController.text.trim(),
+            customerName: _customerNameController.text.trim(),
+            customerPhone: _customerPhoneController.text.trim(),
+            paymentMethod: _paymentMethod,
+          );
 
-      // Clear cart
-      cartProvider.clearCart();
+          // Save to database
+          final orderService = Provider.of<OrderService>(context, listen: false);
+          final orderId = await orderService.createOrder(newOrder);
 
-      // Show success
-      _showOrderSuccess(orderId);
-    } catch (e) {
-      // Show error
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
+          // Clear cart
+          cartProvider.clearCart();
 
-      setState(() {
-        _isProcessing = false;
-      });
-    }
+          // Show success
+          _showOrderSuccess(orderId);
+        } catch (e) {
+          // Show error
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+
+          setState(() {
+            _isProcessing = false;
+          });
+        }
+      },
+    );
   }
 
-  Future<void> _printReceipt() async {
-    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+  Future<void> _printReceipt() {
+    // Show bottom sheet for customer details before printing
+    return _showCustomerDetailsBottomSheet(
+      onConfirm: () async {
+        final cartProvider = Provider.of<CartProvider>(context, listen: false);
 
-    if (cartProvider.items.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Cart is empty'),
-          backgroundColor: Colors.orange,
+        if (cartProvider.items.isEmpty) {
+          AnimatedSnackBar.material(
+            'Cart is empty',
+            type: AnimatedSnackBarType.info,
+            mobileSnackBarPosition: MobileSnackBarPosition.bottom,
+            desktopSnackBarPosition: DesktopSnackBarPosition.bottomCenter,
+            duration: Duration(seconds: 2),
+          ).show(context);
+          return;
+        }
+
+        setState(() {
+          _isProcessing = true;
+        });
+
+        try {
+          final printerService = PrinterService();
+
+          final items = cartProvider.items.map((item) => {
+            'name': item.name,
+            'price': item.price,
+            'quantity': item.quantity,
+            'total': item.price * item.quantity,
+          }).toList();
+
+          final receiptData = {
+            'items': items,
+            'total': cartProvider.totalPrice,
+            'notes': _notesController.text.trim(),
+            'timestamp': DateTime.now().toString(),
+            'customerName': _customerNameController.text.trim(),
+            'customerPhone': _customerPhoneController.text.trim(),
+            'paymentMethod': _paymentMethod,
+          };
+
+          final success = await printerService.printReceipt(receiptData);
+
+          if (success) {
+            AnimatedSnackBar.material(
+              'Receipt printed successfully',
+              type: AnimatedSnackBarType.success,
+              mobileSnackBarPosition: MobileSnackBarPosition.bottom,
+              desktopSnackBarPosition: DesktopSnackBarPosition.bottomCenter,
+              duration: Duration(seconds: 2),
+            ).show(context);
+          } else {
+            AnimatedSnackBar.material(
+              'Failed to print receipt',
+              type: AnimatedSnackBarType.error,
+              mobileSnackBarPosition: MobileSnackBarPosition.bottom,
+              desktopSnackBarPosition: DesktopSnackBarPosition.bottomCenter,
+              duration: Duration(seconds: 2),
+            ).show(context);
+          }
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Printer error: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        } finally {
+          setState(() {
+            _isProcessing = false;
+          });
+        }
+      },
+    );
+  }
+
+  Future<void> _showCustomerDetailsBottomSheet({
+    required Future<void> Function() onConfirm,
+  }) {
+    return showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+          left: 16,
+          right: 16,
+          top: 16,
         ),
-      );
-      return;
-    }
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Customer Details',
+                style: Theme.of(context).textTheme.headlineSmall,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
 
-    setState(() {
-      _isProcessing = true;
-    });
+              // Customer Name
+              TextFormField(
+                controller: _customerNameController,
+                decoration: InputDecoration(
+                  labelText: 'Customer Name',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Please enter customer name';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
 
-    try {
-      final printerService = PrinterService();
+              // Customer Phone
+              TextFormField(
+                controller: _customerPhoneController,
+                decoration: InputDecoration(
+                  labelText: 'Phone Number',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                keyboardType: TextInputType.phone,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Please enter phone number';
+                  }
+                  // Basic phone number validation
+                  if (!RegExp(r'^[0-9]{10}$').hasMatch(value.trim())) {
+                    return 'Please enter a valid 10-digit phone number';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
 
-      final items = cartProvider.items.map((item) => {
-        'name': item.name,
-        'price': item.price,
-        'quantity': item.quantity,
-        'total': item.price * item.quantity,
-      }).toList();
+              // Payment Method
+              Text(
+                'Payment Method',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: RadioListTile<String>(
+                      title: const Text('Cash'),
+                      value: 'Cash',
+                      groupValue: _paymentMethod,
+                      onChanged: (value) {
+                        setState(() {
+                          _paymentMethod = value!;
+                        });
+                      },
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
+                  Expanded(
+                    child: RadioListTile<String>(
+                      title: const Text('UPI'),
+                      value: 'UPI',
+                      groupValue: _paymentMethod,
+                      onChanged: (value) {
+                        setState(() {
+                          _paymentMethod = value!;
+                        });
+                      },
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
 
-      final receiptData = {
-        'items': items,
-        'total': cartProvider.totalPrice,
-        'notes': _notesController.text.trim(),
-        'timestamp': DateTime.now().toString(),
-      };
+              // Order Notes
+              TextField(
+                controller: _notesController,
+                decoration: InputDecoration(
+                  labelText: 'Order Notes',
+                  hintText: 'Add any special instructions...',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                maxLines: 2,
+              ),
+              const SizedBox(height: 16),
 
-      final success = await printerService.printReceipt(receiptData);
-
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Receipt printed successfully'),
-            backgroundColor: Colors.green,
+              // Confirm Button
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  // Call the provided confirmation callback
+                  onConfirm();
+                },
+                child: const Text('Confirm'),
+              ),
+              const SizedBox(height: 16),
+            ],
           ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to print receipt'),
-            backgroundColor: Colors.orange,
-          ),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Printer error: ${e.toString()}'),
-          backgroundColor: Colors.red,
         ),
-      );
-    } finally {
-      setState(() {
-        _isProcessing = false;
-      });
-    }
+      ),
+    );
   }
 
   void _showOrderSuccess(String orderId) {
@@ -273,6 +439,7 @@ class _CartScreenState extends State<CartScreen> {
             children: [
               // Cart items list
               Expanded(
+                flex: 2,
                 child: ListView.builder(
                   padding: const EdgeInsets.all(16),
                   itemCount: cartProvider.items.length,
@@ -289,21 +456,8 @@ class _CartScreenState extends State<CartScreen> {
                 ),
               ),
 
-              // Order notes
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: TextField(
-                  controller: _notesController,
-                  decoration: InputDecoration(
-                    labelText: 'Order Notes',
-                    hintText: 'Add any special instructions...',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  maxLines: 2,
-                ),
-              ),
+              // Customer details and payment section
+
 
               // Summary and actions
               Container(
@@ -322,34 +476,39 @@ class _CartScreenState extends State<CartScreen> {
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
                       children: [
-                        Text(
-                          'Total Items:',
-                          style: Theme.of(context).textTheme.titleMedium,
+                        Row(
+                          children: [
+                            Text(
+                              'Total Items:',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            Text(
+                              '${cartProvider.totalItems}',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                          ],
                         ),
-                        Text(
-                          '${cartProvider.totalItems}',
-                          style: Theme.of(context).textTheme.titleMedium,
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Text(
+                              'Total:',
+                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              '₹${cartProvider.totalPrice.toStringAsFixed(2)}',
+                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Total:',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          '₹${cartProvider.totalPrice.toStringAsFixed(2)}',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                        ),
+
                       ],
                     ),
                     const SizedBox(height: 16),

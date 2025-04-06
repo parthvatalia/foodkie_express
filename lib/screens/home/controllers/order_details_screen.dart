@@ -1,6 +1,8 @@
 
 // This screen is referenced in the routes but needs to be created
+import 'package:animated_snack_bar/animated_snack_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:foodkie_express/screens/home/order_history_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:foodkie_express/api/order_service.dart';
@@ -10,6 +12,7 @@ import 'package:foodkie_express/models/profile.dart';
 import 'package:foodkie_express/widgets/animated_button.dart';
 import 'package:lottie/lottie.dart';
 
+import '../../../routes.dart';
 import '../../../utils/printer_services.dart';
 import '../../settings/bluetooth_printer_screen.dart';
 
@@ -84,9 +87,14 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
 
     bool bluetoothEnabled = await printerService.isBluetoothEnabled();
     if (!bluetoothEnabled) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enable Bluetooth to print')),
-      );
+      AnimatedSnackBar.material(
+        'Please enable Bluetooth to print',
+        type: AnimatedSnackBarType.info,
+        mobileSnackBarPosition: MobileSnackBarPosition.bottom,
+        desktopSnackBarPosition: DesktopSnackBarPosition.bottomCenter,
+        duration: Duration(seconds: 2),
+      ).show(context);
+
       return;
     }
 
@@ -183,16 +191,15 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
       final success = await printerService.printReceipt(receiptData);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              success
-                  ? 'Receipt printed successfully'
-                  : 'Failed to print receipt',
-            ),
-            backgroundColor: success ? Colors.green : Colors.orange,
-          ),
-        );
+        AnimatedSnackBar.material(
+          success
+              ? 'Receipt printed successfully'
+              : 'Failed to print receipt',
+          type:success? AnimatedSnackBarType.success:AnimatedSnackBarType.error,
+          mobileSnackBarPosition: MobileSnackBarPosition.bottom,
+          desktopSnackBarPosition: DesktopSnackBarPosition.bottomCenter,
+          duration: Duration(seconds: 2),
+        ).show(context);
       }
     } catch (e) {
       if (mounted) {
@@ -258,6 +265,19 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
               onPressed: _isPrinting ? null : _printReceipt,
               tooltip: 'Print Receipt',
             ),
+          if (_order != null && (_order!.status == 'pending' || _order!.status == 'processing'))
+            IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: () {
+                Navigator.pushReplacementNamed(
+                  context,
+                  AppRoutes.editBill,
+                  arguments: {'orderId': widget.orderId},
+                );
+              },
+              tooltip: 'Edit Bill',
+            ),
+
         ],
       ),
       body: _isLoading
@@ -337,7 +357,24 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      _buildStatusChip(_order!.status),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          _order!.paymentMethod.capitalize(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -524,54 +561,6 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
             ),
           ),
 
-          // Order Actions
-          if (_order!.status != 'completed' && _order!.status != 'cancelled')
-            Card(
-              margin: const EdgeInsets.only(bottom: 16),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Update Order Status',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        if (_order!.status == 'pending')
-                          ElevatedButton(
-                            onPressed: () => _updateOrderStatus('processing'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
-                            ),
-                            child: const Text('Start Processing'),
-                          ),
-                        if (_order!.status == 'processing')
-                          ElevatedButton(
-                            onPressed: () => _updateOrderStatus('completed'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
-                            ),
-                            child: const Text('Mark Completed'),
-                          ),
-                        ElevatedButton(
-                          onPressed: () => _updateOrderStatus('cancelled'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                          ),
-                          child: const Text('Cancel Order'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
 
           // Print Button
           AnimatedButton(

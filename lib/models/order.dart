@@ -10,6 +10,9 @@ class OrderModel extends Equatable {
   final Timestamp? updatedAt;
   final String? notes;
   final String? orderNumber;
+  final String? customerName;
+  final String? customerPhone;
+  final String paymentMethod;
 
   const OrderModel({
     required this.id,
@@ -20,6 +23,9 @@ class OrderModel extends Equatable {
     this.updatedAt,
     this.notes,
     this.orderNumber,
+    this.customerName,
+    this.customerPhone,
+    this.paymentMethod = 'Cash', // Default value
   });
 
   factory OrderModel.create({
@@ -27,6 +33,9 @@ class OrderModel extends Equatable {
     required double totalAmount,
     String status = 'pending',
     String? notes,
+    String? customerName,
+    String? customerPhone,
+    String paymentMethod = 'Cash',
   }) {
     // Generate order number (YYMMDD-XXXX format)
     final now = DateTime.now();
@@ -41,6 +50,9 @@ class OrderModel extends Equatable {
       status: status,
       notes: notes,
       orderNumber: orderNumber,
+      customerName: customerName,
+      customerPhone: customerPhone,
+      paymentMethod: paymentMethod,
     );
   }
 
@@ -59,6 +71,9 @@ class OrderModel extends Equatable {
       updatedAt: map['updatedAt'] as Timestamp?,
       notes: map['notes'],
       orderNumber: map['orderNumber'],
+      customerName: map['customerName'],
+      customerPhone: map['customerPhone'],
+      paymentMethod: map['paymentMethod'] ?? 'Cash',
     );
   }
 
@@ -71,6 +86,9 @@ class OrderModel extends Equatable {
       'updatedAt': updatedAt,
       'notes': notes,
       'orderNumber': orderNumber,
+      'customerName': customerName,
+      'customerPhone': customerPhone,
+      'paymentMethod': paymentMethod,
     };
   }
 
@@ -83,6 +101,9 @@ class OrderModel extends Equatable {
     Timestamp? updatedAt,
     String? notes,
     String? orderNumber,
+    String? customerName,
+    String? customerPhone,
+    String? paymentMethod,
   }) {
     return OrderModel(
       id: id ?? this.id,
@@ -93,6 +114,9 @@ class OrderModel extends Equatable {
       updatedAt: updatedAt ?? this.updatedAt,
       notes: notes ?? this.notes,
       orderNumber: orderNumber ?? this.orderNumber,
+      customerName: customerName ?? this.customerName,
+      customerPhone: customerPhone ?? this.customerPhone,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
     );
   }
 
@@ -106,6 +130,9 @@ class OrderModel extends Equatable {
     updatedAt,
     notes,
     orderNumber,
+    customerName,
+    customerPhone,
+    paymentMethod,
   ];
 }
 

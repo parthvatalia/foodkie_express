@@ -6,19 +6,14 @@ class OrderCard extends StatelessWidget {
   final OrderModel order;
   final VoidCallback onTap;
 
-  const OrderCard({
-    Key? key,
-    required this.order,
-    required this.onTap,
-  }) : super(key: key);
+  const OrderCard({Key? key, required this.order, required this.onTap})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
@@ -26,30 +21,65 @@ class OrderCard extends StatelessWidget {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+
             children: [
               // Order Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Order Number
-                  Text(
-                    'Order #${order.orderNumber ?? order.id.substring(0, 6)}',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
 
-                  // Status Chip
-                  _buildStatusChip(context),
+                children: [
+                  if (order.customerName!.isNotEmpty)
+                    Text(
+                      order.customerName.toString(),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  if (order.customerPhone!.isNotEmpty)
+                    Text(
+                      order.customerPhone.toString(),
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        fontWeight: FontWeight.w300,
+                      ),
+                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Order Number
+                      Text(
+                        'Order #${order.orderNumber ?? order.id.substring(0, 6)}',
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          order.paymentMethod.capitalize(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
 
               // Divider
-              Divider(
-                height: 24,
-                thickness: 1,
-                color: Colors.grey[200],
-              ),
+              Divider(height: 24, thickness: 1, color: Colors.grey[200]),
 
               // Order Items
               Column(
@@ -67,11 +97,7 @@ class OrderCard extends StatelessWidget {
               ),
 
               // Divider
-              Divider(
-                height: 24,
-                thickness: 1,
-                color: Colors.grey[200],
-              ),
+              Divider(height: 24, thickness: 1, color: Colors.grey[200]),
 
               // Order Footer
               Row(
@@ -80,7 +106,9 @@ class OrderCard extends StatelessWidget {
                   // Order Date
                   if (order.createdAt != null)
                     Text(
-                      DateFormat('MMM dd, yyyy • hh:mm a').format(order.createdAt!.toDate()),
+                      DateFormat(
+                        'MMM dd, yyyy • hh:mm a',
+                      ).format(order.createdAt!.toDate()),
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
 
@@ -101,49 +129,6 @@ class OrderCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusChip(BuildContext context) {
-    Color bgColor;
-    Color textColor;
-
-    switch (order.status) {
-      case 'pending':
-        bgColor = Colors.orange[50]!;
-        textColor = Colors.orange[700]!;
-        break;
-      case 'processing':
-        bgColor = Colors.blue[50]!;
-        textColor = Colors.blue[700]!;
-        break;
-      case 'completed':
-        bgColor = Colors.green[50]!;
-        textColor = Colors.green[700]!;
-        break;
-      case 'cancelled':
-        bgColor = Colors.red[50]!;
-        textColor = Colors.red[700]!;
-        break;
-      default:
-        bgColor = Colors.grey[50]!;
-        textColor = Colors.grey[700]!;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Text(
-        order.status.capitalize(),
-        style: TextStyle(
-          color: textColor,
-          fontWeight: FontWeight.bold,
-          fontSize: 12,
-        ),
-      ),
-    );
-  }
-
   Widget _buildItemsList(BuildContext context) {
     // Display up to 3 items, and "more" if there are additional items
     final displayItems = order.items.take(3).toList();
@@ -152,13 +137,15 @@ class OrderCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ...displayItems.map((item) => Padding(
-          padding: const EdgeInsets.only(bottom: 4),
-          child: Text(
-            '${item.quantity}x ${item.name}',
-            style: Theme.of(context).textTheme.bodyMedium,
+        ...displayItems.map(
+          (item) => Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Text(
+              '${item.quantity}x ${item.name}',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
           ),
-        )),
+        ),
         if (hasMore)
           Text(
             '+ ${order.items.length - 3} more items',

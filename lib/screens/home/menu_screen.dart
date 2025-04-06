@@ -1,3 +1,4 @@
+import 'package:animated_snack_bar/animated_snack_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:foodkie_express/routes.dart';
@@ -54,8 +55,10 @@ class _MenuScreenState extends State<MenuScreen> {
     });
 
     try {
-      final results = await Provider.of<MenuService>(context, listen: false)
-          .searchItems(query);
+      final results = await Provider.of<MenuService>(
+        context,
+        listen: false,
+      ).searchItems(query);
 
       setState(() {
         _searchResults = results;
@@ -83,21 +86,27 @@ class _MenuScreenState extends State<MenuScreen> {
                 children: [
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.only(left: 16,right: 8,top: 18,bottom: 8),
+                      padding: const EdgeInsets.only(
+                        left: 16,
+                        right: 8,
+                        top: 18,
+                        bottom: 8,
+                      ),
                       child: TextField(
                         controller: _searchController,
                         decoration: InputDecoration(
                           hintText: 'Search menu items...',
                           prefixIcon: const Icon(Icons.search),
-                          suffixIcon: _searchController.text.isNotEmpty
-                              ? IconButton(
-                            icon: const Icon(Icons.clear),
-                            onPressed: () {
-                              _searchController.clear();
-                              _performSearch('');
-                            },
-                          )
-                              : null,
+                          suffixIcon:
+                              _searchController.text.isNotEmpty
+                                  ? IconButton(
+                                    icon: const Icon(Icons.clear),
+                                    onPressed: () {
+                                      _searchController.clear();
+                                      _performSearch('');
+                                    },
+                                  )
+                                  : null,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -109,38 +118,42 @@ class _MenuScreenState extends State<MenuScreen> {
                     ),
                   ),
                   Consumer<CartProvider>(
-                    builder: (context, cartProvider, _) =>  IconButton(
-                    icon: Stack(
-                      children: [
-                        const Icon(Icons.shopping_cart,size: 30,),
-                        if (cartProvider.itemCount > 0)
-                          Positioned(
-                            right: 0,
-                            top: 0,
-                            child: Container(
-                              padding: const EdgeInsets.all(1),
-                              decoration: BoxDecoration(
-                                color: Colors.red,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              constraints: const BoxConstraints(
-                                minWidth: 14,
-                                minHeight: 14,
-                              ),
-                              child: Text(
-                                '${cartProvider.itemCount}',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
+                    builder:
+                        (context, cartProvider, _) => IconButton(
+                          icon: Stack(
+                            children: [
+                              const Icon(Icons.shopping_cart, size: 30),
+                              if (cartProvider.itemCount > 0)
+                                Positioned(
+                                  right: 0,
+                                  top: 0,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(1),
+                                    decoration: BoxDecoration(
+                                      color: Colors.red,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    constraints: const BoxConstraints(
+                                      minWidth: 14,
+                                      minHeight: 14,
+                                    ),
+                                    child: Text(
+                                      '${cartProvider.itemCount}',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
                                 ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
+                            ],
                           ),
-                      ],
-                    ),
-                    onPressed: () => Navigator.pushNamed(context, AppRoutes.cart),
-                  ),),
+                          onPressed:
+                              () =>
+                                  Navigator.pushNamed(context, AppRoutes.cart),
+                        ),
+                  ),
                 ],
               ),
             ),
@@ -150,15 +163,12 @@ class _MenuScreenState extends State<MenuScreen> {
 
             // Menu Items
             Expanded(
-              child: _isSearching
-                  ? _buildSearchResults()
-                  : _buildMenuItems(),
+              child: _isSearching ? _buildSearchResults() : _buildMenuItems(),
             ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-
         label: const Text("Add Food"),
         onPressed: () {
           Navigator.pushNamed(
@@ -179,18 +189,14 @@ class _MenuScreenState extends State<MenuScreen> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const SizedBox(
             height: 50,
-            child: Center(
-              child: CircularProgressIndicator(),
-            ),
+            child: Center(child: CircularProgressIndicator()),
           );
         }
 
         if (snapshot.hasError) {
           return SizedBox(
             height: 50,
-            child: Center(
-              child: Text('Error: ${snapshot.error}'),
-            ),
+            child: Center(child: Text('Error: ${snapshot.error}')),
           );
         }
 
@@ -264,8 +270,7 @@ class _MenuScreenState extends State<MenuScreen> {
             ),
 
             // Sub-categories if available
-            if (_selectedCategoryId != null)
-              _buildSubCategoryTabs(categories),
+            if (_selectedCategoryId != null) _buildSubCategoryTabs(categories),
           ],
         );
       },
@@ -275,7 +280,7 @@ class _MenuScreenState extends State<MenuScreen> {
   Widget _buildSubCategoryTabs(List<CategoryModel> categories) {
     // Find the selected category
     final selectedCategory = categories.firstWhere(
-          (category) => category.id == _selectedCategoryId,
+      (category) => category.id == _selectedCategoryId,
       orElse: () => const CategoryModel(id: '', name: '', order: 0),
     );
 
@@ -288,7 +293,8 @@ class _MenuScreenState extends State<MenuScreen> {
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: selectedCategory.subCategories.length + 1, // +1 for "All" option
+        itemCount: selectedCategory.subCategories.length + 1,
+        // +1 for "All" option
         itemBuilder: (context, index) {
           // "All" option
           if (index == 0) {
@@ -337,15 +343,11 @@ class _MenuScreenState extends State<MenuScreen> {
         stream: Provider.of<MenuService>(context).getMenuItems(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           if (snapshot.hasError) {
-            return Center(
-              child: Text('Error: ${snapshot.error}'),
-            );
+            return Center(child: Text('Error: ${snapshot.error}'));
           }
 
           final items = snapshot.data ?? [];
@@ -355,16 +357,17 @@ class _MenuScreenState extends State<MenuScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.restaurant_menu, size: 64, color: Colors.grey),
+                  const Icon(
+                    Icons.restaurant_menu,
+                    size: 64,
+                    color: Colors.grey,
+                  ),
                   const SizedBox(height: 16),
                   const Text('No items available'),
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
                     onPressed: () {
-                      Navigator.pushNamed(
-                        context,
-                        AppRoutes.addItem,
-                      );
+                      Navigator.pushNamed(context, AppRoutes.addItem);
                     },
                     icon: const Icon(Icons.add),
                     label: const Text('Add Item'),
@@ -376,7 +379,12 @@ class _MenuScreenState extends State<MenuScreen> {
 
           return AnimationLimiter(
             child: ListView.builder(
-              padding: const EdgeInsets.only(left: 16,right: 16,top: 16,bottom: 70),
+              padding: const EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 16,
+                bottom: 70,
+              ),
               itemCount: items.length,
               itemBuilder: (context, index) {
                 return AnimationConfiguration.staggeredList(
@@ -402,28 +410,27 @@ class _MenuScreenState extends State<MenuScreen> {
 
     // If a specific category is selected, show filtered items
     return StreamBuilder<List<MenuItemModel>>(
-      stream: Provider.of<MenuService>(context).getMenuItems(
-        categoryId: _selectedCategoryId,
-      ),
+      stream: Provider.of<MenuService>(
+        context,
+      ).getMenuItems(categoryId: _selectedCategoryId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return const Center(child: CircularProgressIndicator());
         }
 
         if (snapshot.hasError) {
-          return Center(
-            child: Text('Error: ${snapshot.error}'),
-          );
+          return Center(child: Text('Error: ${snapshot.error}'));
         }
 
         final items = snapshot.data ?? [];
 
         // Filter by subcategory if selected
-        final filteredItems = _selectedSubCategory != null
-            ? items.where((item) => item.subCategory == _selectedSubCategory).toList()
-            : items;
+        final filteredItems =
+            _selectedSubCategory != null
+                ? items
+                    .where((item) => item.subCategory == _selectedSubCategory)
+                    .toList()
+                : items;
 
         if (filteredItems.isEmpty) {
           return Center(
@@ -452,7 +459,12 @@ class _MenuScreenState extends State<MenuScreen> {
 
         return AnimationLimiter(
           child: ListView.builder(
-            padding: const EdgeInsets.only(left: 16,right: 16,top: 16,bottom: 70),
+            padding: const EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 16,
+              bottom: 70,
+            ),
             itemCount: filteredItems.length,
             itemBuilder: (context, index) {
               return AnimationConfiguration.staggeredList(
@@ -478,9 +490,7 @@ class _MenuScreenState extends State<MenuScreen> {
 
   Widget _buildSearchResults() {
     if (_searchResults.isEmpty) {
-      return const Center(
-        child: Text('No items found'),
-      );
+      return const Center(child: Text('No items found'));
     }
 
     return ListView.builder(
@@ -525,7 +535,9 @@ class _MenuScreenState extends State<MenuScreen> {
                   item.isAvailable ? Icons.visibility_off : Icons.visibility,
                 ),
                 title: Text(
-                  item.isAvailable ? 'Mark as Unavailable' : 'Mark as Available',
+                  item.isAvailable
+                      ? 'Mark as Unavailable'
+                      : 'Mark as Available',
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -549,11 +561,10 @@ class _MenuScreenState extends State<MenuScreen> {
 
   Future<void> _toggleItemAvailability(MenuItemModel item) async {
     try {
-      await Provider.of<MenuService>(context, listen: false).updateMenuItem(
-        item.id,
-        {'isAvailable': !item.isAvailable},
-        null,
-      );
+      await Provider.of<MenuService>(
+        context,
+        listen: false,
+      ).updateMenuItem(item.id, {'isAvailable': !item.isAvailable}, null);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -590,28 +601,23 @@ class _MenuScreenState extends State<MenuScreen> {
     final cartProvider = Provider.of<CartProvider>(context, listen: false);
 
     // Add item to cart
-    cartProvider.addItem(
-      id: item.id,
-      name: item.name,
-      price: item.price,
-    );
+    cartProvider.addItem(id: item.id, name: item.name, price: item.price);
 
     // Get the quantity of this specific item
-    final totalCategoryItems = cartProvider.items
-        .firstWhere((cartItem) => cartItem.name == item.name).quantity.toString();
+    final totalCategoryItems =
+        cartProvider.items
+            .firstWhere((cartItem) => cartItem.name == item.name)
+            .quantity
+            .toString();
 
     // Show notification
     ScaffoldMessenger.of(context).removeCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('total $totalCategoryItems ${item.name} added to the cart'),
-        action: SnackBarAction(
-          label: 'VIEW CART',
-          onPressed: () {
-            Navigator.pushNamed(context, AppRoutes.cart);
-          },
-        ),
-      ),
-    );
+    AnimatedSnackBar.material(
+      'total $totalCategoryItems ${item.name} added to the cart',
+      type: AnimatedSnackBarType.success,
+      mobileSnackBarPosition: MobileSnackBarPosition.bottom,
+      desktopSnackBarPosition: DesktopSnackBarPosition.bottomCenter,
+      duration: Duration(seconds: 2),
+    ).show(context);
   }
 }

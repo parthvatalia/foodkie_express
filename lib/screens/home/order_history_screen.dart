@@ -14,20 +14,13 @@ class OrderHistoryScreen extends StatefulWidget {
   State<OrderHistoryScreen> createState() => _OrderHistoryScreenState();
 }
 
-enum DateFilter {
-  all,
-  today,
-  yesterday,
-  lastWeek,
-  lastMonth,
-}
+enum DateFilter { all, today, yesterday, lastWeek, lastMonth }
 
 class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   String _filterStatus = 'all';
   DateFilter _dateFilter = DateFilter.all;
   DateTime? _startDate;
   DateTime? _endDate;
-
 
   final List<String> _statusFilters = [
     'all',
@@ -54,7 +47,14 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         case DateFilter.yesterday:
           final yesterday = now.subtract(const Duration(days: 1));
           _startDate = DateTime(yesterday.year, yesterday.month, yesterday.day);
-          _endDate = DateTime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59);
+          _endDate = DateTime(
+            yesterday.year,
+            yesterday.month,
+            yesterday.day,
+            23,
+            59,
+            59,
+          );
           break;
         case DateFilter.lastWeek:
           _startDate = now.subtract(Duration(days: 7));
@@ -113,21 +113,17 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                       ),
                     ),
                     FilterChip(
-                      label: Text(
-                        "Clear Filter",
-                      ),
+                      label: Text("Clear Filter"),
                       selected: false,
                       onSelected: (selected) {
-                          setState(() {
-                            _filterStatus = 'all';
-                            _startDate = null;
-                            _endDate = null;
-                            _dateFilter = DateFilter.all;
-
-                          });
+                        setState(() {
+                          _filterStatus = 'all';
+                          _startDate = null;
+                          _endDate = null;
+                          _dateFilter = DateFilter.all;
+                        });
                       },
                     ),
-
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -207,24 +203,27 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
-                    children: _statusFilters.map((status) {
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: FilterChip(
-                          label: Text(
-                            status == 'all' ? 'All' : StringExtension(status).capitalize(),
-                          ),
-                          selected: _filterStatus == status,
-                          onSelected: (selected) {
-                            if (selected) {
-                              setState(() {
-                                _filterStatus = status;
-                              });
-                            }
-                          },
-                        ),
-                      );
-                    }).toList(),
+                    children:
+                        _statusFilters.map((status) {
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: FilterChip(
+                              label: Text(
+                                status == 'all'
+                                    ? 'All'
+                                    : StringExtension(status).capitalize(),
+                              ),
+                              selected: _filterStatus == status,
+                              onSelected: (selected) {
+                                if (selected) {
+                                  setState(() {
+                                    _filterStatus = status;
+                                  });
+                                }
+                              },
+                            ),
+                          );
+                        }).toList(),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -267,15 +266,11 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
               stream: Provider.of<OrderService>(context).getOrders(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
+                  return const Center(child: CircularProgressIndicator());
                 }
 
                 if (snapshot.hasError) {
-                  return Center(
-                    child: Text('Error: ${snapshot.error}'),
-                  );
+                  return Center(child: Text('Error: ${snapshot.error}'));
                 }
 
                 final orders = snapshot.data ?? [];
@@ -285,22 +280,31 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
 
                 // Apply status filter
                 if (_filterStatus != 'all') {
-                  filteredOrders = filteredOrders
-                      .where((order) => order.status == _filterStatus)
-                      .toList();
+                  filteredOrders =
+                      filteredOrders
+                          .where((order) => order.status == _filterStatus)
+                          .toList();
                 }
 
                 // Apply date range filter
                 if (_startDate != null && _endDate != null) {
-                  final endDateWithTime = DateTime(_endDate!.year, _endDate!.month, _endDate!.day, 23, 59, 59);
+                  final endDateWithTime = DateTime(
+                    _endDate!.year,
+                    _endDate!.month,
+                    _endDate!.day,
+                    23,
+                    59,
+                    59,
+                  );
 
-                  filteredOrders = filteredOrders.where((order) {
-                    if (order.createdAt == null) return false;
+                  filteredOrders =
+                      filteredOrders.where((order) {
+                        if (order.createdAt == null) return false;
 
-                    final orderDate = order.createdAt!.toDate();
-                    return orderDate.isAfter(_startDate!) &&
-                        orderDate.isBefore(endDateWithTime);
-                  }).toList();
+                        final orderDate = order.createdAt!.toDate();
+                        return orderDate.isAfter(_startDate!) &&
+                            orderDate.isBefore(endDateWithTime);
+                      }).toList();
                 }
 
                 if (filteredOrders.isEmpty) {

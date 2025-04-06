@@ -59,7 +59,9 @@ dependencies:
   printing: ^5.14.2
   flutter_bluetooth_serial: ^0.4.0
   network_info_plus: ^4.0.2
-
+  fl_chart: ^0.70.2
+  flutter_charts: ^0.5.2
+  animated_snack_bar: ^0.4.0
   # Data Handling
   equatable: ^2.0.5
   json_annotation: ^4.8.1

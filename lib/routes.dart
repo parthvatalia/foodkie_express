@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:foodkie_express/screens/analytics/sales_analytics_screen.dart';
 
 // Auth Screens
 import 'package:foodkie_express/screens/auth/splash_screen.dart';
 import 'package:foodkie_express/screens/auth/login_screen.dart';
 import 'package:foodkie_express/screens/auth/otp_screen.dart';
+import 'package:foodkie_express/screens/billing/edit_bill_screen.dart';
 import 'package:foodkie_express/screens/home/controllers/order_details_screen.dart';
 
 // Home Screens
@@ -24,7 +26,8 @@ import 'package:foodkie_express/models/category.dart';
 import 'package:foodkie_express/models/order.dart';
 
 class AppRoutes {
-  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  static final GlobalKey<NavigatorState> navigatorKey =
+      GlobalKey<NavigatorState>();
 
   // Route names
   static const String splash = '/';
@@ -39,6 +42,9 @@ class AppRoutes {
   static const String editItem = '/edit-item';
   static const String categoryManagement = '/category-management';
   static const String orderDetails = '/order-details';
+  static const String editBill = '/edit-bill';
+  static const String salesAnalytics = '/sales-analytics';
+
 
   // Navigation methods
   static Future<void> navigateToHome() async {
@@ -67,7 +73,10 @@ class AppRoutes {
 
       case home:
         return MaterialPageRoute(builder: (_) => const HomeScreen());
-
+      case salesAnalytics:
+        return MaterialPageRoute(
+          builder: (_) => const SalesAnalyticsScreen(),
+        );
       case menu:
         final args = settings.arguments as Map<String, dynamic>?;
         final categoryId = args?['categoryId'] as String?;
@@ -75,6 +84,13 @@ class AppRoutes {
           builder: (_) => MenuScreen(categoryId: categoryId),
         );
 
+
+      case editBill:
+        final args = settings.arguments as Map<String, dynamic>?;
+        final orderId = args?['orderId'] as String?;
+        return MaterialPageRoute(
+          builder: (_) => EditBillScreen(orderId: orderId),
+        );
       case cart:
         return MaterialPageRoute(builder: (_) => const CartScreen());
 
@@ -94,9 +110,7 @@ class AppRoutes {
       case editItem:
         final args = settings.arguments as Map<String, dynamic>?;
         final item = args?['item'] as MenuItemModel;
-        return MaterialPageRoute(
-          builder: (_) => EditItemScreen(item: item),
-        );
+        return MaterialPageRoute(builder: (_) => EditItemScreen(item: item));
 
       case categoryManagement:
         return MaterialPageRoute(
@@ -111,14 +125,13 @@ class AppRoutes {
         );
 
       default:
-      // If the route is not found, show an error page
+        // If the route is not found, show an error page
         return MaterialPageRoute(
-          builder: (_) => Scaffold(
-            appBar: AppBar(title: const Text('Error')),
-            body: const Center(
-              child: Text('Page not found!'),
-            ),
-          ),
+          builder:
+              (_) => Scaffold(
+                appBar: AppBar(title: const Text('Error')),
+                body: const Center(child: Text('Page not found!')),
+              ),
         );
     }
   }

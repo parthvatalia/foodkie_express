@@ -16,6 +16,7 @@ import 'package:firebase_auth/firebase_auth.dart' as fa;
 
 import '../../utils/menu_data_loader.dart';
 import '../../utils/update_checker.dart';
+import '../../widgets/quick_order_sheet.dart';
 import 'menu_screen.dart';
 import 'order_history_screen.dart';
 
@@ -31,6 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final PageController _pageController = PageController();
   RestaurantProfile? _restaurantProfile;
   bool _isLoading = true;
+
   @override
   void initState() {
     super.initState();
@@ -279,99 +281,127 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         )
         : SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Welcome Card
-              Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Welcome to your Foodkie Express!',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Card(
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Welcome to your Foodkie Express!',
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(fontWeight: FontWeight.bold),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Manage your menu, track orders, and more with our efficient tools.',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton.icon(
-                        onPressed: () => _changePage(1), // Navigate to Menu tab
-                        icon: const Icon(Icons.menu_book),
-                        label: const Text('View Menu'),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 10,
+                        const SizedBox(height: 8),
+                        Text(
+                          'Manage your menu, track orders, and more with our efficient tools.',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        const SizedBox(height: 8),
+                        ElevatedButton.icon(
+                          onPressed:
+                              () => _changePage(1), // Navigate to Menu tab
+                          icon: const Icon(Icons.menu_book),
+                          label: const Text('View Menu'),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 10,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 12),
 
               // Categories Section
-              Text(
-                'Categories',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Text(
+                  'Categories',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
               ),
               const SizedBox(height: 12),
-              _buildCategoriesGrid(),
+              _buildCategoriesList(),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 12),
 
               // Quick Actions
-              Text(
-                'Quick Actions',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Text(
+                  'Quick Actions',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               _buildQuickActions(),
             ],
           ),
         );
   }
 
-  Widget _buildCategoriesGrid() {
+  Widget _buildCategoriesList() {
     return StreamBuilder<List<CategoryModel>>(
       stream: Provider.of<MenuService>(context).getCategories(),
       builder: (context, snapshot) {
+        // Handle loading state
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
 
+        // Handle error state
         if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                const SizedBox(height: 16),
+                Text('Error loading categories: ${snapshot.error}'),
+                const SizedBox(height: 16),
+              ],
+            ),
+          );
         }
 
+        // Get categories, defaulting to empty list
         final categories = snapshot.data ?? [];
 
+        // Handle empty categories
         if (categories.isEmpty) {
           return Card(
+            margin: const EdgeInsets.all(16),
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Icon(Icons.category, size: 48, color: Colors.grey),
                   const SizedBox(height: 8),
-                  const Text('No categories yet'),
+                  const Text(
+                    'No categories yet',
+                    style: TextStyle(fontSize: 16),
+                  ),
                   const SizedBox(height: 8),
                   ElevatedButton(
                     onPressed: () {
@@ -388,29 +418,27 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         }
 
-        return GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            childAspectRatio:
-                MediaQuery.of(context).size.shortestSide < 600 ? 1.5 : 2.5,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
+        // Display categories in a horizontal ListView with a fixed height
+        return SizedBox(
+          height: 140, // Adjust this height as needed
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: categories.length,
+            padding: EdgeInsets.symmetric(horizontal: 10),
+            separatorBuilder: (context, index) => const SizedBox(width: 8),
+            itemBuilder: (context, index) {
+              return CategoryCard(
+                category: categories[index],
+                onTap: () {
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.menu,
+                    arguments: {'categoryId': categories[index].id},
+                  );
+                },
+              );
+            },
           ),
-          itemCount: categories.length,
-          itemBuilder: (context, index) {
-            return CategoryCard(
-              category: categories[index],
-              onTap: () {
-                Navigator.pushNamed(
-                  context,
-                  AppRoutes.menu,
-                  arguments: {'categoryId': categories[index].id},
-                );
-              },
-            );
-          },
         );
       },
     );
@@ -419,6 +447,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildQuickActions() {
     return GridView.count(
       shrinkWrap: true,
+      padding: EdgeInsets.all(8),
       physics: const NeverScrollableScrollPhysics(),
       crossAxisCount: 2,
       childAspectRatio:
@@ -428,7 +457,7 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         _actionCard(
           icon: Icons.add_circle,
-          title: 'Add Item',
+          title: 'Add Food',
           color: Colors.green,
           onTap: () => Navigator.pushNamed(context, AppRoutes.addItem),
         ),
@@ -446,10 +475,10 @@ class _HomeScreenState extends State<HomeScreen> {
           onTap: () => _changePage(2),
         ),
         _actionCard(
-          icon: Icons.settings,
-          title: 'Settings',
-          color: Colors.purple,
-          onTap: () => _changePage(3),
+          icon: Icons.bar_chart,
+          title: 'Sales Analytics',
+          color: Colors.deepPurple,
+          onTap: () => Navigator.pushNamed(context, AppRoutes.salesAnalytics),
         ),
       ],
     );
