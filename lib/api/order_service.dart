@@ -32,6 +32,22 @@ class OrderService {
       rethrow;
     }
   }
+  Future<String> updateOrder(OrderModel order) async {
+    try {
+
+
+
+      final data = order.toMap();
+      data['createdAt'] = FieldValue.serverTimestamp();
+      data['orderNumber'] = order.orderNumber.toString();
+
+      final docRef = await _ordersRef.add(data);
+      return docRef.id;
+    } catch (e) {
+      debugPrint('Error creating order: $e');
+      rethrow;
+    }
+  }
   
   Future<int> getNextOrderNumber() async {
     final user = FirebaseAuth.instance.currentUser;

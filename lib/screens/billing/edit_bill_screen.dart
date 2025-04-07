@@ -26,7 +26,8 @@ class _EditBillScreenState extends State<EditBillScreen> {
   String? _errorMessage;
   final TextEditingController _notesController = TextEditingController();
   final TextEditingController _customerNameController = TextEditingController();
-  final TextEditingController _customerPhoneController = TextEditingController();
+  final TextEditingController _customerPhoneController =
+      TextEditingController();
   String _paymentMethod = 'Cash';
   late CartProvider _cartProvider;
   List<MenuItemModel> _menuItems = [];
@@ -66,7 +67,6 @@ class _EditBillScreenState extends State<EditBillScreen> {
         throw Exception('Order ID is required');
       }
 
-      
       final orderService = Provider.of<OrderService>(context, listen: false);
       final order = await orderService.getOrderById(widget.orderId!);
 
@@ -74,7 +74,6 @@ class _EditBillScreenState extends State<EditBillScreen> {
         throw Exception('Order not found');
       }
 
-      
       _cartProvider.clearCart();
 
       for (var item in order.items) {
@@ -90,11 +89,9 @@ class _EditBillScreenState extends State<EditBillScreen> {
       _customerPhoneController.text = order.customerPhone ?? '';
       _paymentMethod = order.paymentMethod;
 
-      
       final menuService = Provider.of<MenuService>(context, listen: false);
       final items = await menuService.getMenuItems().first;
 
-      
       _notesController.text = order.notes ?? '';
 
       setState(() {
@@ -121,16 +118,21 @@ class _EditBillScreenState extends State<EditBillScreen> {
 
     setState(() {
       _isSearching = true;
-      _searchResults = _menuItems
-          .where((item) =>
-      item.name.toLowerCase().contains(query.toLowerCase()) ||
-          (item.description?.toLowerCase().contains(query.toLowerCase()) ?? false))
-          .toList();
+      _searchResults =
+          _menuItems
+              .where(
+                (item) =>
+                    item.name.toLowerCase().contains(query.toLowerCase()) ||
+                    (item.description?.toLowerCase().contains(
+                          query.toLowerCase(),
+                        ) ??
+                        false),
+              )
+              .toList();
     });
   }
 
   Future<void> _saveUpdatedOrder() async {
-    
     if (_cartProvider.items.isEmpty) {
       AnimatedSnackBar.material(
         'Cannot save an empty order',
@@ -142,209 +144,203 @@ class _EditBillScreenState extends State<EditBillScreen> {
       return;
     }
 
-    
     final result = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(20),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            left: 16,
-            right: 16,
-            top: 16,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                
-                Center(
-                  child: Text(
-                    'Confirm Order Details',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+      builder:
+          (context) => StatefulBuilder(
+            builder:
+                (context, setState) => Padding(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom,
+                    left: 16,
+                    right: 16,
+                    top: 16,
                   ),
-                ),
-                const SizedBox(height: 16),
-
-                
-                TextField(
-                  controller: _customerNameController,
-                  decoration: InputDecoration(
-                    labelText: 'Customer Name',
-                    hintText: 'Enter customer name',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                
-                TextField(
-                  controller: _customerPhoneController,
-                  decoration: InputDecoration(
-                    labelText: 'Phone Number',
-                    hintText: 'Enter phone number',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  keyboardType: TextInputType.phone,
-                ),
-                const SizedBox(height: 16),
-
-                
-                Text(
-                  'Payment Method',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: RadioListTile<String>(
-                        title: const Text('Cash'),
-                        value: 'Cash',
-                        groupValue: _paymentMethod,
-                        onChanged: (value) {
-                          setState(() {
-                            _paymentMethod = value!;
-                          });
-                        },
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                    ),
-                    Expanded(
-                      child: RadioListTile<String>(
-                        title: const Text('UPI'),
-                        value: 'UPI',
-                        groupValue: _paymentMethod,
-                        onChanged: (value) {
-                          setState(() {
-                            _paymentMethod = value!;
-                          });
-                        },
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-
-                
-                TextField(
-                  controller: _notesController,
-                  decoration: InputDecoration(
-                    labelText: 'Order Notes',
-                    hintText: 'Add any special instructions...',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  maxLines: 3,
-                ),
-
-                
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Total Items:',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    Text(
-                      '${_cartProvider.totalItems}',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Total:',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      '₹${_cartProvider.totalPrice.toStringAsFixed(2)}',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-
-                
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextButton(
-                        onPressed: () => Navigator.of(context).pop(false),
-                        child: const Text('Cancel'),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-
-                          Navigator.of(context).pop(true);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 10,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Center(
+                          child: Text(
+                            'Confirm Order Details',
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(fontWeight: FontWeight.bold),
                           ),
                         ),
-                        child: const Text('Save',style: TextStyle(color: Colors.white),),
-                      ),
+                        const SizedBox(height: 16),
+
+                        TextField(
+                          controller: _customerNameController,
+                          decoration: InputDecoration(
+                            labelText: 'Customer Name',
+                            hintText: 'Enter customer name',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        TextField(
+                          controller: _customerPhoneController,
+                          decoration: InputDecoration(
+                            labelText: 'Phone Number',
+                            hintText: 'Enter phone number',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          keyboardType: TextInputType.phone,
+                        ),
+                        const SizedBox(height: 16),
+
+                        Text(
+                          'Payment Method',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: RadioListTile<String>(
+                                title: const Text('Cash'),
+                                value: 'Cash',
+                                groupValue: _paymentMethod,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _paymentMethod = value!;
+                                  });
+                                },
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                            ),
+                            Expanded(
+                              child: RadioListTile<String>(
+                                title: const Text('UPI'),
+                                value: 'UPI',
+                                groupValue: _paymentMethod,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _paymentMethod = value!;
+                                  });
+                                },
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+
+                        TextField(
+                          controller: _notesController,
+                          decoration: InputDecoration(
+                            labelText: 'Order Notes',
+                            hintText: 'Add any special instructions...',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          maxLines: 3,
+                        ),
+
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Total Items:',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            Text(
+                              '${_cartProvider.totalItems}',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                          ],
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Total:',
+                              style: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              '₹${_cartProvider.totalPrice.toStringAsFixed(2)}',
+                              style: Theme.of(
+                                context,
+                              ).textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextButton(
+                                onPressed:
+                                    () => Navigator.of(context).pop(false),
+                                child: const Text('Cancel'),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop(true);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 10,
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Save',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-                const SizedBox(height: 16),
-              ],
-            ),
           ),
-        ),
-      ),
     );
 
-    
     if (result == true) {
       setState(() {
         _isSaving = true;
       });
 
       try {
-        
-        final orderItems = _cartProvider.items.map((item) =>
-            OrderItem(
-              id: item.id,
-              name: item.name,
-              price: item.price,
-              quantity: item.quantity,
-              notes: item.notes,
-            )
-        ).toList();
+        final orderItems =
+            _cartProvider.items
+                .map(
+                  (item) => OrderItem(
+                    id: item.id,
+                    name: item.name,
+                    price: item.price,
+                    quantity: item.quantity,
+                    notes: item.notes,
+                  ),
+                )
+                .toList();
 
-        
         final totalAmount = _cartProvider.totalPrice;
 
-        
         final updatedOrder = _order!.copyWith(
           items: orderItems,
           totalAmount: totalAmount,
@@ -354,20 +350,17 @@ class _EditBillScreenState extends State<EditBillScreen> {
           paymentMethod: _paymentMethod,
         );
 
-        
         final orderService = Provider.of<OrderService>(context, listen: false);
 
-        
         await orderService.deleteOrder(widget.orderId!);
 
-        
         final data = updatedOrder.toMap();
         data['orderNumber'] = _order!.orderNumber;
 
-        
-        final orderId = await orderService.createOrder(OrderModel.fromMap(data, ''));
+        final orderId = await orderService.updateOrder(
+          OrderModel.fromMap(data, ''),
+        );
 
-        
         if (mounted) {
           AnimatedSnackBar.material(
             'Bill updated successfully',
@@ -377,7 +370,6 @@ class _EditBillScreenState extends State<EditBillScreen> {
             duration: const Duration(seconds: 2),
           ).show(context);
 
-          
           Navigator.pushReplacementNamed(
             context,
             AppRoutes.orderDetails,
@@ -385,7 +377,6 @@ class _EditBillScreenState extends State<EditBillScreen> {
           );
         }
       } catch (e) {
-        
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -413,11 +404,7 @@ class _EditBillScreenState extends State<EditBillScreen> {
       return;
     }
 
-    _cartProvider.addItem(
-      id: item.id,
-      name: item.name,
-      price: item.price,
-    );
+    _cartProvider.addItem(id: item.id, name: item.name, price: item.price);
     AnimatedSnackBar.material(
       '${item.name} added to bill',
       type: AnimatedSnackBarType.success,
@@ -426,7 +413,6 @@ class _EditBillScreenState extends State<EditBillScreen> {
       duration: const Duration(seconds: 2),
     ).show(context);
 
-    
     _searchController.clear();
     setState(() {
       _isSearching = false;
@@ -439,15 +425,18 @@ class _EditBillScreenState extends State<EditBillScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: Text(_order != null
-            ? 'Edit Bill #${_order!.orderNumber ?? _order!.id.substring(0, 6)}'
-            : 'Edit Bill'),
+        title: Text(
+          _order != null
+              ? 'Edit Bill #${_order!.orderNumber ?? _order!.id.substring(0, 6)}'
+              : 'Edit Bill',
+        ),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _errorMessage != null
-          ? _buildErrorView()
-          : _buildEditOrderContent(),
+      body:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _errorMessage != null
+              ? _buildErrorView()
+              : _buildEditOrderContent(),
     );
   }
 
@@ -456,11 +445,7 @@ class _EditBillScreenState extends State<EditBillScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.error_outline,
-            size: 64,
-            color: Colors.red,
-          ),
+          const Icon(Icons.error_outline, size: 64, color: Colors.red),
           const SizedBox(height: 16),
           Text(
             'Error Loading Order',
@@ -475,10 +460,7 @@ class _EditBillScreenState extends State<EditBillScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: _loadData,
-            child: const Text('Retry'),
-          ),
+          ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
         ],
       ),
     );
@@ -487,7 +469,6 @@ class _EditBillScreenState extends State<EditBillScreen> {
   Widget _buildEditOrderContent() {
     return Column(
       children: [
-        
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: TextField(
@@ -496,15 +477,16 @@ class _EditBillScreenState extends State<EditBillScreen> {
               labelText: 'Search menu items to add',
               hintText: 'Type to search for items',
               prefixIcon: const Icon(Icons.search),
-              suffixIcon: _searchController.text.isNotEmpty
-                  ? IconButton(
-                icon: const Icon(Icons.clear),
-                onPressed: () {
-                  _searchController.clear();
-                  _searchItems('');
-                },
-              )
-                  : null,
+              suffixIcon:
+                  _searchController.text.isNotEmpty
+                      ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _searchController.clear();
+                          _searchItems('');
+                        },
+                      )
+                      : null,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -513,7 +495,6 @@ class _EditBillScreenState extends State<EditBillScreen> {
           ),
         ),
 
-        
         if (_isSearching && _searchResults.isNotEmpty)
           Container(
             height: 200,
@@ -541,7 +522,6 @@ class _EditBillScreenState extends State<EditBillScreen> {
             ),
           ),
 
-        
         Expanded(
           child: Consumer<CartProvider>(
             builder: (context, cartProvider, _) {
@@ -570,7 +550,10 @@ class _EditBillScreenState extends State<EditBillScreen> {
               }
 
               return ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 itemCount: cartProvider.items.length,
                 itemBuilder: (context, index) {
                   final item = cartProvider.items[index];
@@ -598,7 +581,10 @@ class _EditBillScreenState extends State<EditBillScreen> {
                                     Text(
                                       '₹${item.price.toStringAsFixed(2)}',
                                       style: TextStyle(
-                                        color: Theme.of(context).colorScheme.primary,
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
                                       ),
                                     ),
                                   ],
@@ -607,19 +593,31 @@ class _EditBillScreenState extends State<EditBillScreen> {
                               Row(
                                 children: [
                                   IconButton(
-                                    icon: const Icon(Icons.remove_circle_outline),
-                                    onPressed: () => cartProvider.decrementQuantity(item.id),
+                                    icon: const Icon(
+                                      Icons.remove_circle_outline,
+                                    ),
+                                    onPressed:
+                                        () => cartProvider.decrementQuantity(
+                                          item.id,
+                                        ),
                                   ),
                                   Text('${item.quantity}'),
                                   IconButton(
                                     icon: const Icon(Icons.add_circle_outline),
-                                    onPressed: () => cartProvider.incrementQuantity(item.id),
+                                    onPressed:
+                                        () => cartProvider.incrementQuantity(
+                                          item.id,
+                                        ),
                                   ),
                                 ],
                               ),
                               IconButton(
-                                icon: const Icon(Icons.delete_outline, color: Colors.red),
-                                onPressed: () => cartProvider.removeItem(item.id),
+                                icon: const Icon(
+                                  Icons.delete_outline,
+                                  color: Colors.red,
+                                ),
+                                onPressed:
+                                    () => cartProvider.removeItem(item.id),
                               ),
                             ],
                           ),
@@ -651,7 +649,6 @@ class _EditBillScreenState extends State<EditBillScreen> {
           ),
         ),
 
-        
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -667,40 +664,43 @@ class _EditBillScreenState extends State<EditBillScreen> {
           child: Column(
             children: [
               Consumer<CartProvider>(
-                builder: (context, cartProvider, _) => Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Total Items:',
-                      style: Theme.of(context).textTheme.titleMedium,
+                builder:
+                    (context, cartProvider, _) => Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Total Items:',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        Text(
+                          '${cartProvider.totalItems}',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ],
                     ),
-                    Text(
-                      '${cartProvider.totalItems}',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                  ],
-                ),
               ),
               const SizedBox(height: 8),
               Consumer<CartProvider>(
-                builder: (context, cartProvider, _) => Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Total:',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                builder:
+                    (context, cartProvider, _) => Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Total:',
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          '₹${cartProvider.totalPrice.toStringAsFixed(2)}',
+                          style: Theme.of(
+                            context,
+                          ).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                      ],
                     ),
-                    Text(
-                      '₹${cartProvider.totalPrice.toStringAsFixed(2)}',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                    ),
-                  ],
-                ),
               ),
               const SizedBox(height: 16),
               AnimatedButton(
@@ -720,29 +720,30 @@ class _EditBillScreenState extends State<EditBillScreen> {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Add Note for ${item.name}'),
-        content: TextField(
-          controller: noteController,
-          decoration: const InputDecoration(
-            hintText: 'Enter special instructions...',
+      builder:
+          (context) => AlertDialog(
+            title: Text('Add Note for ${item.name}'),
+            content: TextField(
+              controller: noteController,
+              decoration: const InputDecoration(
+                hintText: 'Enter special instructions...',
+              ),
+              maxLines: 3,
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () {
+                  _cartProvider.updateItemNotes(item.id, noteController.text);
+                  Navigator.pop(context);
+                },
+                child: const Text('Save'),
+              ),
+            ],
           ),
-          maxLines: 3,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              _cartProvider.updateItemNotes(item.id, noteController.text);
-              Navigator.pop(context);
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      ),
     );
   }
 }
