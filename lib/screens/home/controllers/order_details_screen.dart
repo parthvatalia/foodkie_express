@@ -182,6 +182,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                   'name': item.name,
                   'price': item.price,
                   'quantity': item.quantity,
+                  'notes': item.notes,
                   'total': item.price * item.quantity,
                 },
               )
@@ -279,12 +280,6 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
               : 'Order Details',
         ),
         actions: [
-          if (_order != null)
-            IconButton(
-              icon: const Icon(Icons.print),
-              onPressed: _isPrinting ? null : _printReceipt,
-              tooltip: 'Print Receipt',
-            ),
         ],
       ),
       body:
@@ -609,7 +604,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                   },
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: [Text('Add Food')],
+                    children: [Text('Add or Edit Food')],
                   ),
                 ),
               ),

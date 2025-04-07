@@ -1,12 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:foodkie_express/screens/settings/bluetooth_printer_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:foodkie_express/api/profile_service.dart';
 import 'package:foodkie_express/models/profile.dart';
-import 'package:foodkie_express/routes.dart';
-import 'package:foodkie_express/screens/auth/controllers/auth_provider.dart';
 import 'package:foodkie_express/widgets/animated_button.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -53,7 +50,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         _profile = profile;
 
-        
         if (profile != null) {
           _nameController.text = profile.name;
           _phoneController.text = profile.phoneNumber ?? '';
@@ -134,6 +130,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             backgroundColor: Colors.green,
           ),
         );
+        Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
@@ -151,44 +148,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         });
       }
     }
-  }
-
-  Future<void> _signOut() async {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Sign Out'),
-            content: const Text('Are you sure you want to sign out?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () async {
-                  Navigator.pop(context);
-                  try {
-                    await Provider.of<AuthProvider>(
-                      context,
-                      listen: false,
-                    ).signOut();
-                    AppRoutes.navigateToLogin();
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Error signing out: ${e.toString()}'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
-                },
-                style: TextButton.styleFrom(foregroundColor: Colors.red),
-                child: const Text('Sign Out'),
-              ),
-            ],
-          ),
-    );
   }
 
   @override
@@ -218,11 +177,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        
                         Center(
                           child: Stack(
                             children: [
-                              
                               GestureDetector(
                                 onTap: _pickImage,
                                 child: CircleAvatar(
@@ -247,7 +204,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           : null,
                                 ),
                               ),
-                              
+
                               Positioned(
                                 bottom: 0,
                                 right: 0,
@@ -275,7 +232,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 24),
 
-                        
                         Text(
                           'Basic Information',
                           style: Theme.of(context).textTheme.titleLarge
@@ -283,7 +239,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        
                         TextFormField(
                           controller: _nameController,
                           decoration: InputDecoration(
@@ -302,7 +257,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        
                         TextFormField(
                           controller: _phoneController,
                           decoration: InputDecoration(
@@ -316,7 +270,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        
                         TextFormField(
                           controller: _emailController,
                           decoration: InputDecoration(
@@ -330,14 +283,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 24),
 
-                        
                         Text(
                           'Address Information',
                           style: Theme.of(context).textTheme.titleLarge
                               ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 16),
-                        
+
                         TextFormField(
                           controller: _addressController,
                           decoration: InputDecoration(
@@ -350,10 +302,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        
                         Row(
                           children: [
-                            
                             Expanded(
                               child: TextFormField(
                                 controller: _cityController,
@@ -367,7 +317,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                             ),
                             const SizedBox(width: 12),
-                            
+
                             Expanded(
                               child: TextFormField(
                                 controller: _stateController,
@@ -384,7 +334,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        
                         TextFormField(
                           controller: _zipCodeController,
                           decoration: InputDecoration(
@@ -398,7 +347,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 24),
 
-                        
                         Text(
                           'Additional Information',
                           style: Theme.of(context).textTheme.titleLarge
@@ -420,112 +368,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 32),
 
-                        
                         AnimatedButton(
                           onPressed: _isLoading ? null : _saveProfile,
                           isLoading: _isLoading,
                           child: const Text('Save Profile'),
                         ),
                         const SizedBox(height: 24),
-
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-
-                        
-                        Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Column(
-                            children: [
-                              ListTile(
-                                leading: const Icon(Icons.print),
-                                title: const Text('Printer setup'),
-                                trailing: const Icon(
-                                  Icons.arrow_forward_ios,
-                                  size: 16,
-                                ),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder:
-                                          (context) =>
-                                              const BluetoothPrinterSelectionScreen(),
-                                    ),
-                                  );
-                                },
-                              ),
-                              const Divider(),
-                              ListTile(
-                                leading: const Icon(Icons.logout),
-                                title: const Text('Sign Out'),
-                                textColor: Colors.red,
-                                iconColor: Colors.red,
-                                onTap: _signOut,
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 32),
-
-                        
-                        Center(
-                          child: Column(
-                            children: [
-                              Text(
-                                'Foodkie Express',
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Version 1.0.0',
-                                style: Theme.of(context).textTheme.bodySmall
-                                    ?.copyWith(color: Colors.grey),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 16),
                       ],
                     ),
                   ),

@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:foodkie_express/screens/home/profile_screen.dart';
+import 'package:foodkie_express/screens/home/settings_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:foodkie_express/routes.dart';
 import 'package:foodkie_express/screens/home/controllers/cart_provider.dart';
@@ -211,7 +211,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _buildHomeTab(),
           const MenuScreen(),
           const OrderHistoryScreen(),
-          const ProfileScreen(),
+          const SettingsScreen(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -279,7 +279,7 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Padding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 8.0,
+                  horizontal: 12.0,
                   vertical: 8,
                 ),
                 child: Card(
@@ -320,7 +320,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
                 child: Text(
                   'Quick Actions',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -410,12 +410,12 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisCount: 3,
             crossAxisSpacing: 10,
             mainAxisSpacing: 10,
-            childAspectRatio: 0.8,
+            childAspectRatio: 0.7,
           ),
           scrollDirection: Axis.vertical,
           shrinkWrap: true,
           itemCount: categories.length,
-          padding: const EdgeInsets.symmetric(horizontal: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
           itemBuilder: (context, index) {
             return CategoryCard(
               category: categories[index],
@@ -436,7 +436,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildQuickActions() {
     return GridView.count(
       shrinkWrap: true,
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.symmetric(horizontal: 12,vertical: 8),
       physics: const NeverScrollableScrollPhysics(),
       crossAxisCount: 4,
       childAspectRatio: 1,

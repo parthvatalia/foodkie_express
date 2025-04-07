@@ -300,10 +300,17 @@ class _EditBillScreenState extends State<EditBillScreen> {
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () {
-                          
+
                           Navigator.of(context).pop(true);
                         },
-                        child: const Text('Confirm'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                        ),
+                        child: const Text('Save',style: TextStyle(color: Colors.white),),
                       ),
                     ),
                   ],
@@ -435,13 +442,6 @@ class _EditBillScreenState extends State<EditBillScreen> {
         title: Text(_order != null
             ? 'Edit Bill #${_order!.orderNumber ?? _order!.id.substring(0, 6)}'
             : 'Edit Bill'),
-        actions: [
-          IconButton(
-            onPressed: _isSaving ? null : _saveUpdatedOrder,
-            icon: const Icon(Icons.save),
-            tooltip: 'Save Changes',
-          ),
-        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -706,7 +706,7 @@ class _EditBillScreenState extends State<EditBillScreen> {
               AnimatedButton(
                 onPressed: _isSaving ? null : _saveUpdatedOrder,
                 isLoading: _isSaving,
-                child: const Text('Save Changes'),
+                child: const Text('Next'),
               ),
             ],
           ),

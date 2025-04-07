@@ -56,7 +56,6 @@ class PrinterService {
     }
   }
 
-  
   Future<List<BluetoothDevice>> getAvailableBluetoothDevices() async {
     try {
       bool permissionsGranted = await requestBluetoothPermissions();
@@ -128,8 +127,6 @@ class PrinterService {
         await _sendDataInChunks(connection, commands);
         await Future.delayed(const Duration(seconds: 1));
 
-        
-
         connection.dispose();
 
         return true;
@@ -148,19 +145,12 @@ class PrinterService {
   }
 
   void _sendInitializationCommands(BluetoothConnection connection) {
-    final initCommands = [
-      0x1B, 0x40, 
-      0x1B, 0x4D, 0x00, 
-      0x1B, 0x21, 0x00, 
-    ];
+    final initCommands = [0x1B, 0x40, 0x1B, 0x4D, 0x00, 0x1B, 0x21, 0x00];
     connection.output.add(Uint8List.fromList(initCommands));
   }
 
   void _sendCutPaperCommands(BluetoothConnection connection) {
-    final cutCommands = [
-      0x0A, 0x0A, 0x0A, 
-      0x1D, 0x56, 0x01, 
-    ];
+    final cutCommands = [0x0A, 0x0A, 0x0A, 0x1D, 0x56, 0x01];
     connection.output.add(Uint8List.fromList(cutCommands));
   }
 
@@ -187,13 +177,15 @@ class PrinterService {
     const GS = 0x1D;
     const LF = 0x0A;
 
-    commands.addAll([ESC, 0x40]); 
+    commands.addAll([ESC, 0x40]);
 
-    final centerAlign = [ESC, 0x61, 0x01]; 
+    final centerAlign = [ESC, 0x61, 0x01];
+    final leftAlign = [ESC, 0x61, 0x00];
 
-    final normalFont = [ESC, 0x21, 0x00]; 
-    final boldOn = [ESC, 0x45, 0x01]; 
-    final boldOff = [ESC, 0x45, 0x00]; 
+
+    final normalFont = [ESC, 0x21, 0x00];
+    final boldOn = [ESC, 0x45, 0x01];
+    final boldOff = [ESC, 0x45, 0x00];
 
     commands.addAll(centerAlign);
     commands.addAll(boldOn);
@@ -229,25 +221,28 @@ class PrinterService {
     commands.addAll(ascii.encode(orderLine));
     commands.add(LF);
 
-    final customerName = data['customerName'] ?? 'N/A';
-    commands.addAll(ascii.encode('CUSTOMER : $customerName'));
-    commands.add(LF);
+    final customerName = data['customerName'] ?? '';
+    if (customerName.toString().isNotEmpty) {
+      commands.addAll(ascii.encode('CUSTOMER : $customerName'));
+    commands.add(LF);}
 
-    final customerPhone = data['customerPhone'] ?? 'N/A';
-    commands.addAll(ascii.encode('PHONE : $customerPhone'));
-    commands.add(LF);
-
+    final customerPhone = data['customerPhone'] ?? '';
+    final notesAll = data['notes'] ?? '';
+    if (customerPhone.toString().isNotEmpty) {
+      commands.addAll(ascii.encode('PHONE : $customerPhone'));
+      commands.add(LF);
+    }
     commands.addAll(ascii.encode(''.padRight(42, '-')));
     commands.add(LF);
     commands.add(LF);
 
-    const int lineWidth = 42; 
+    const int lineWidth = 42;
 
-    
     final items = data['items'] ?? [];
     for (var item in items) {
       final name = item['name'] ?? 'Unknown Item';
       final quantity = item['quantity'] ?? 1;
+      final notes = item['notes'] ?? '';
       final price = item['price'] ?? 0.0;
       final total = quantity * price;
 
@@ -261,10 +256,27 @@ class PrinterService {
 
       final formattedLine = itemText + spaces + priceStr;
       commands.addAll(ascii.encode(formattedLine));
+      if (notes.toString().isNotEmpty) {
+        commands.add(LF);
+        commands.addAll(leftAlign);
+        commands.addAll(ascii.encode('note: $notes'));
+        commands.addAll(centerAlign);
+        commands.add(LF);
+
+
+      }
       commands.add(LF);
     }
 
     commands.addAll(ascii.encode(''.padRight(lineWidth, '-')));
+    if (notesAll.toString().isNotEmpty) {
+      commands.add(LF);
+      commands.addAll(leftAlign);
+      commands.addAll(ascii.encode('note: $notesAll'));
+      commands.addAll(centerAlign);
+      commands.add(LF);
+      commands.addAll(ascii.encode(''.padRight(lineWidth, '-')));
+    }
     commands.add(LF);
 
     commands.addAll(boldOn);
@@ -296,7 +308,6 @@ class PrinterService {
     commands.add(LF);
     commands.add(LF);
 
-    
     commands.addAll(centerAlign);
     commands.addAll(ascii.encode('CUSTOMER COPY'));
     commands.add(LF);
@@ -306,14 +317,12 @@ class PrinterService {
     commands.add(LF);
     commands.add(LF);
 
-    
-    commands.addAll([LF, LF, LF, LF]); 
-    commands.addAll([GS, 0x56, 0x00]); 
+    commands.addAll([LF, LF, LF, LF]);
+    commands.addAll([GS, 0x56, 0x00]);
 
     return commands;
   }
 
-  
   Future<bool> printTest() async {
     try {
       final testData = {

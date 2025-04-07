@@ -13,7 +13,7 @@ import 'package:foodkie_express/screens/home/home_screen.dart';
 import 'package:foodkie_express/screens/home/menu_screen.dart';
 import 'package:foodkie_express/screens/home/cart_screen.dart';
 import 'package:foodkie_express/screens/home/order_history_screen.dart';
-import 'package:foodkie_express/screens/home/profile_screen.dart';
+import 'package:foodkie_express/screens/home/settings_screen.dart';
 
 
 import 'package:foodkie_express/screens/menu_management/add_item_screen.dart';
@@ -22,6 +22,7 @@ import 'package:foodkie_express/screens/menu_management/category_management_scre
 
 
 import 'package:foodkie_express/models/item.dart';
+import 'package:foodkie_express/screens/settings/profile_screen.dart';
 
 class AppRoutes {
   static final GlobalKey<NavigatorState> navigatorKey =
@@ -36,6 +37,7 @@ class AppRoutes {
   static const String cart = '/cart';
   static const String orderHistory = '/order-history';
   static const String profile = '/profile';
+  static const String settingsScreen = '/settings';
   static const String addItem = '/add-item';
   static const String editItem = '/edit-item';
   static const String categoryManagement = '/category-management';
@@ -95,7 +97,9 @@ class AppRoutes {
       case orderHistory:
         return MaterialPageRoute(builder: (_) => const OrderHistoryScreen());
 
-      case profile:
+      case settingsScreen:
+        return MaterialPageRoute(builder: (_) => const SettingsScreen());
+        case profile:
         return MaterialPageRoute(builder: (_) => const ProfileScreen());
 
       case addItem:

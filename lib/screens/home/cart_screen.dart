@@ -141,6 +141,7 @@ class _CartScreenState extends State<CartScreen> {
                     (item) => {
                       'name': item.name,
                       'price': item.price,
+                      'notes': item.notes,
                       'quantity': item.quantity,
                       'total': item.price * item.quantity,
                     },
@@ -337,16 +338,20 @@ class _CartScreenState extends State<CartScreen> {
 
                           
                           ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
+                            ),
                             onPressed: () {
-                              
                               Navigator.pop(bottomSheetContext);
-
-                              
                               Future.microtask(() {
                                 onConfirm();
                               });
                             },
-                            child: const Text('Confirm'),
+                            child: const Text('Confirm Order',style: TextStyle(color: Colors.white),),
                           ),
                           const SizedBox(height: 16),
                         ],
@@ -591,7 +596,7 @@ class _CartScreenState extends State<CartScreen> {
                           child: AnimatedButton(
                             onPressed: _isProcessing ? null : _placeOrder,
                             isLoading: _isProcessing,
-                            child: const Text('Place Order'),
+                            child: const Text('Next'),
                           ),
                         ),
                       ],
