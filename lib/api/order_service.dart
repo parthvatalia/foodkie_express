@@ -2,7 +2,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../models/order.dart';
 
 class OrderService {
@@ -11,17 +10,17 @@ class OrderService {
 
   String get _userId => _auth.currentUser?.uid ?? '';
 
-  // Get orders collection reference
+  
   CollectionReference get _ordersRef =>
       _firestore.collection('users').doc(_userId).collection('orders');
 
-  // Create new order
+  
   Future<String> createOrder(OrderModel order) async {
     try {
-      // Get next sequential order number
+      
       int orderNumber = await getNextOrderNumber();
 
-      // Add timestamp and order number
+      
       final data = order.toMap();
       data['createdAt'] = FieldValue.serverTimestamp();
       data['orderNumber'] = orderNumber.toString();
@@ -30,37 +29,37 @@ class OrderService {
       return docRef.id;
     } catch (e) {
       debugPrint('Error creating order: $e');
-      throw e;
+      rethrow;
     }
   }
-  // Add this to your OrderService class
+  
   Future<int> getNextOrderNumber() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) throw Exception('User not authenticated');
 
-    int orderNumber = 1; // Default starting value
+    int orderNumber = 1; 
 
-    // Use a transaction to safely increment the counter
+    
     await _firestore.runTransaction((transaction) async {
-      // Get reference to the counter document
+      
       final counterRef = _firestore
           .collection('users')
           .doc(user.uid)
           .collection('counters')
           .doc('orders');
 
-      // Get current counter value
+      
       final snapshot = await transaction.get(counterRef);
 
       if (snapshot.exists) {
-        // Increment existing counter
+        
         orderNumber = (snapshot.data()?['currentCount'] ?? 0) + 1;
         transaction.update(counterRef, {
           'currentCount': orderNumber,
           'updatedAt': FieldValue.serverTimestamp()
         });
       } else {
-        // Create counter if it doesn't exist (should not happen if setup correctly)
+        
         orderNumber = 1;
         transaction.set(counterRef, {
           'currentCount': orderNumber,
@@ -73,7 +72,7 @@ class OrderService {
     return orderNumber;
   }
 
-  // Get all orders
+  
   Stream<List<OrderModel>> getOrders() {
     return _ordersRef
         .orderBy('createdAt', descending: true)
@@ -86,7 +85,7 @@ class OrderService {
     );
   }
 
-  // Get order by id
+  
   Future<OrderModel?> getOrderById(String id) async {
     final doc = await _ordersRef.doc(id).get();
 
@@ -95,7 +94,7 @@ class OrderService {
     return OrderModel.fromMap(doc.data() as Map<String, dynamic>, doc.id);
   }
 
-  // Update order status
+  
   Future<void> updateOrderStatus(String id, String status) async {
     await _ordersRef.doc(id).update({
       'status': status,
@@ -103,14 +102,14 @@ class OrderService {
     });
   }
 
-  // Get orders by date range
+  
   Future<List<OrderModel>> getOrdersByDateRange(
       DateTime startDate,
       DateTime endDate
       ) async {
-    // Convert dates to Firestore timestamps
+    
     final start = Timestamp.fromDate(startDate);
-    final end = Timestamp.fromDate(endDate.add(Duration(days: 1)));
+    final end = Timestamp.fromDate(endDate.add(const Duration(days: 1)));
 
     final snapshot = await _ordersRef
         .where('createdAt', isGreaterThanOrEqualTo: start)
@@ -124,7 +123,7 @@ class OrderService {
     }).toList();
   }
 
-  // Get order statistics
+  
   Future<Map<String, dynamic>> getOrderStatistics() async {
     final today = DateTime.now();
     final startOfToday = DateTime(today.year, today.month, today.day);
@@ -133,22 +132,22 @@ class OrderService {
     );
     final startOfMonth = DateTime(today.year, today.month, 1);
 
-    // Get orders for today
+    
     final todayOrders = await getOrdersByDateRange(
         startOfToday, today
     );
 
-    // Get orders for this week
+    
     final weekOrders = await getOrdersByDateRange(
         startOfWeek, today
     );
 
-    // Get orders for this month
+    
     final monthOrders = await getOrdersByDateRange(
         startOfMonth, today
     );
 
-    // Calculate statistics
+    
     final todayTotal = _calculateTotal(todayOrders);
     final weekTotal = _calculateTotal(weekOrders);
     final monthTotal = _calculateTotal(monthOrders);
@@ -163,12 +162,12 @@ class OrderService {
     };
   }
 
-  // Helper: Calculate total amount from orders
+  
   double _calculateTotal(List<OrderModel> orders) {
     return orders.fold(0, (sum, order) => sum + order.totalAmount);
   }
 
-  // Delete order
+  
   Future<void> deleteOrder(String id) async {
     await _ordersRef.doc(id).delete();
   }

@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'dart:convert' show utf8, ascii;
+import 'dart:convert' show ascii;
 
 class PrinterService {
   static final PrinterService _instance = PrinterService._internal();
@@ -15,17 +15,12 @@ class PrinterService {
 
   PrinterService._internal();
 
-  BluetoothConnection? _connection;
-  StreamSubscription? _connectionStateSubscription;
-
-  // Save Bluetooth printer address
   Future<void> saveBluetoothPrinter(String address, String name) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('bt_printer_address', address);
     await prefs.setString('bt_printer_name', name);
   }
 
-  // Get saved Bluetooth printer settings
   Future<Map<String, String>?> getSavedBluetoothPrinter() async {
     final prefs = await SharedPreferences.getInstance();
     final address = prefs.getString('bt_printer_address');
@@ -36,10 +31,8 @@ class PrinterService {
     return {'address': address, 'name': name};
   }
 
-  // Comprehensive Bluetooth permission request
   Future<bool> requestBluetoothPermissions() async {
     if (Platform.isAndroid) {
-      // Request multiple permissions
       final permissionStatuses =
           await [
             Permission.bluetooth,
@@ -48,13 +41,11 @@ class PrinterService {
             Permission.location,
           ].request();
 
-      // Check if all permissions are granted
       return permissionStatuses.values.every((status) => status.isGranted);
     }
-    return true; // For iOS or other platforms
+    return true;
   }
 
-  // Bluetooth availability check with more robust error handling
   Future<bool> isBluetoothEnabled() async {
     try {
       await requestBluetoothPermissions();
@@ -65,17 +56,15 @@ class PrinterService {
     }
   }
 
-  // Enhanced device discovery
+  
   Future<List<BluetoothDevice>> getAvailableBluetoothDevices() async {
     try {
-      // Ensure permissions are granted
       bool permissionsGranted = await requestBluetoothPermissions();
       if (!permissionsGranted) {
         debugPrint('Bluetooth permissions not granted');
         return [];
       }
 
-      // Get bonded devices with timeout
       return await FlutterBluetoothSerial.instance.getBondedDevices().timeout(
         const Duration(seconds: 10),
       );
@@ -85,7 +74,6 @@ class PrinterService {
     }
   }
 
-  // Bluetooth enable request with feedback
   Future<bool> requestEnableBluetooth() async {
     try {
       await FlutterBluetoothSerial.instance.requestEnable();
@@ -96,18 +84,15 @@ class PrinterService {
     }
   }
 
-  // Robust printer connection check
   Future<bool> isPrinterConnected() async {
     final printerInfo = await getSavedBluetoothPrinter();
     if (printerInfo == null) return false;
 
     try {
-      // Attempt to establish a connection with a timeout
       final connection = await BluetoothConnection.toAddress(
         printerInfo['address']!,
       ).timeout(const Duration(seconds: 5));
 
-      // If connection is successful, immediately close it
       connection.dispose();
       return true;
     } on TimeoutException {
@@ -119,7 +104,6 @@ class PrinterService {
     }
   }
 
-  // Advanced print method with retry and error handling
   Future<bool> printReceipt(
     Map<String, dynamic> data, {
     int maxRetries = 3,
@@ -127,32 +111,25 @@ class PrinterService {
     for (int attempt = 1; attempt <= maxRetries; attempt++) {
       BluetoothConnection? connection;
       try {
-        // Validate printer configuration
         final printerInfo = await getSavedBluetoothPrinter();
         if (printerInfo == null) {
           debugPrint('No Bluetooth printer configured');
           return false;
         }
 
-        // Establish connection with robust error handling
         connection = await BluetoothConnection.toAddress(
           printerInfo['address']!,
         ).timeout(const Duration(seconds: 10));
 
-        // Prepare print commands with more robust ESC/POS commands
         List<int> commands = _preparePrintCommands(data);
 
-        // Send initialization commands
         _sendInitializationCommands(connection);
 
-        // Send data with chunking to prevent buffer overflow
         await _sendDataInChunks(connection, commands);
         await Future.delayed(const Duration(seconds: 1));
 
-        // Send cut and feed commands
-        _sendCutPaperCommands(connection);
+        
 
-        // Close connection
         connection.dispose();
 
         return true;
@@ -164,33 +141,29 @@ class PrinterService {
         connection?.dispose();
       }
 
-      // Wait before retrying
       await Future.delayed(const Duration(seconds: 2));
     }
 
     return false;
   }
 
-  // Send initialization commands
   void _sendInitializationCommands(BluetoothConnection connection) {
     final initCommands = [
-      0x1B, 0x40, // ESC @ - Initialize printer
-      0x1B, 0x4D, 0x00, // Select character code table
-      0x1B, 0x21, 0x00, // Cancel bold, underline, double-height, double-width
+      0x1B, 0x40, 
+      0x1B, 0x4D, 0x00, 
+      0x1B, 0x21, 0x00, 
     ];
     connection.output.add(Uint8List.fromList(initCommands));
   }
 
-  // Send paper cut and feed commands
   void _sendCutPaperCommands(BluetoothConnection connection) {
     final cutCommands = [
-      0x0A, 0x0A, 0x0A, // Feed 3 lines
-      0x1D, 0x56, 0x01, // Partial cut
+      0x0A, 0x0A, 0x0A, 
+      0x1D, 0x56, 0x01, 
     ];
     connection.output.add(Uint8List.fromList(cutCommands));
   }
 
-  // Chunk data sending to prevent buffer overflow
   Future<void> _sendDataInChunks(
     BluetoothConnection connection,
     List<int> data, {
@@ -203,66 +176,74 @@ class PrinterService {
       connection.output.add(Uint8List.fromList(chunk));
       await connection.output.allSent;
 
-      // Add a small delay to prevent buffer overflow
       await Future.delayed(const Duration(milliseconds: 100));
     }
   }
 
-  // Comprehensive print command preparation
-  // Replace the _preparePrintCommands method in printer_services.dart with this improved version
   List<int> _preparePrintCommands(Map<String, dynamic> data) {
     List<int> commands = [];
 
-    // ESC/POS command constants
     const ESC = 0x1B;
     const GS = 0x1D;
     const LF = 0x0A;
 
-    // Initialization sequence
-    commands.addAll([ESC, 0x40]); // Initialize printer
+    commands.addAll([ESC, 0x40]); 
 
-    // Text alignment commands
-    final centerAlign = [ESC, 0x61, 0x01]; // Center alignment
-    final leftAlign = [ESC, 0x61, 0x00]; // Left alignment
+    final centerAlign = [ESC, 0x61, 0x01]; 
 
-    // Font commands
-    final normalFont = [ESC, 0x21, 0x00]; // Normal font
-    final boldOn = [ESC, 0x45, 0x01]; // Bold on
-    final boldOff = [ESC, 0x45, 0x00]; // Bold off
+    final normalFont = [ESC, 0x21, 0x00]; 
+    final boldOn = [ESC, 0x45, 0x01]; 
+    final boldOff = [ESC, 0x45, 0x00]; 
 
-    // Add center alignment for header
     commands.addAll(centerAlign);
     commands.addAll(boldOn);
 
-    // Restaurant details
     final restaurantName =
         (data['restaurant']?['name'] ?? 'Foodkie Express').toUpperCase();
     commands.addAll(ascii.encode(restaurantName));
     commands.add(LF);
-    commands.addAll(boldOff);
 
-    // Order details
-    final orderNumber = data['orderNumber'] ?? 'N/A';
-    commands.addAll(ascii.encode('Order #: $orderNumber'));
+    if (data['restaurant']?['address'] != null) {
+      commands.addAll(ascii.encode(data['restaurant']['address']));
+      commands.add(LF);
+    }
+
+    if (data['restaurant']?['phone'] != null) {
+      commands.addAll(ascii.encode(data['restaurant']['phone']));
+      commands.add(LF);
+    }
+
+    commands.addAll(boldOff);
     commands.add(LF);
 
+    final orderNumber = data['orderNumber'] ?? 'N/A';
     final timestamp =
         data['timestamp'] != null
             ? DateFormat(
-              'dd/MM/yyyy HH:mm',
+              'dd/MM/yyyy HH:mm aa',
             ).format(DateTime.parse(data['timestamp']))
-            : DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now());
-    commands.addAll(ascii.encode('Date: $timestamp'));
+            : DateFormat('dd/MM/yyyy HH:mm aa').format(DateTime.now());
+
+    final orderLine =
+        'ORDER : $orderNumber'.padRight(20) + timestamp.padLeft(12);
+    commands.addAll(ascii.encode(orderLine));
     commands.add(LF);
 
-    // Separator
-    commands.addAll(ascii.encode('--------------------------------'));
+    final customerName = data['customerName'] ?? 'N/A';
+    commands.addAll(ascii.encode('CUSTOMER : $customerName'));
     commands.add(LF);
 
-    // Switch to left alignment for items
-    commands.addAll(leftAlign);
+    final customerPhone = data['customerPhone'] ?? 'N/A';
+    commands.addAll(ascii.encode('PHONE : $customerPhone'));
+    commands.add(LF);
 
-    // Items
+    commands.addAll(ascii.encode(''.padRight(42, '-')));
+    commands.add(LF);
+    commands.add(LF);
+
+    const int lineWidth = 42; 
+
+    
     final items = data['items'] ?? [];
     for (var item in items) {
       final name = item['name'] ?? 'Unknown Item';
@@ -270,42 +251,71 @@ class PrinterService {
       final price = item['price'] ?? 0.0;
       final total = quantity * price;
 
-      final itemLine = '$quantity x $name';
-      commands.addAll(ascii.encode(itemLine));
-      commands.add(LF);
-      commands.addAll(ascii.encode('  Price: Rs.${total.toStringAsFixed(2)}'));
+      final quantityStr = '$quantity';
+      final nameStr = name.toUpperCase();
+      final priceStr = 'Rs.${total.toStringAsFixed(2)}';
+
+      final itemText = '$quantityStr x $nameStr';
+      final spacesNeeded = lineWidth - itemText.length - priceStr.length;
+      final spaces = ' ' * (spacesNeeded > 0 ? spacesNeeded : 1);
+
+      final formattedLine = itemText + spaces + priceStr;
+      commands.addAll(ascii.encode(formattedLine));
       commands.add(LF);
     }
 
-    // Separator
-    commands.addAll(ascii.encode('--------------------------------'));
+    commands.addAll(ascii.encode(''.padRight(lineWidth, '-')));
     commands.add(LF);
 
-    // Total
-    final total = data['total'] ?? 0.0;
-    commands.addAll(centerAlign);
     commands.addAll(boldOn);
-    commands.addAll(ascii.encode('TOTAL: Rs.${total.toStringAsFixed(2)}'));
-    commands.add(LF);
+    final total = data['total'] ?? 0.0;
+
+    const totalText = 'TOTAL:';
+    final totalValue = 'Rs.${total.toStringAsFixed(2)}';
+    final totalSpaces = lineWidth - totalText.length - totalValue.length;
+    commands.addAll(
+      ascii.encode(totalText + ' '.padRight(totalSpaces) + totalValue),
+    );
     commands.addAll(boldOff);
 
-    // Footer
-    commands.addAll(centerAlign);
-    commands.addAll(ascii.encode('Thank you for your order!'));
+    commands.add(LF);
+    final paymentMethod = data['paymentMethod'] ?? 'CASH';
+
+    const tansactionType = 'TRANSACTION TYPE:';
+    final tansactionTypeValue = '$paymentMethod';
+    final tansactionTypeTotalSpaces =
+        lineWidth - tansactionType.length - tansactionTypeValue.length;
+    commands.addAll(
+      ascii.encode(
+        tansactionType +
+            ' '.padRight(tansactionTypeTotalSpaces) +
+            tansactionTypeValue,
+      ),
+    );
+    commands.add(LF);
     commands.add(LF);
     commands.add(LF);
 
-    // Feed and cut
-    commands.addAll([LF, LF, LF, LF]); // Feed 4 lines
-    commands.addAll([GS, 0x56, 0x00]); // Full cut
+    
+    commands.addAll(centerAlign);
+    commands.addAll(ascii.encode('CUSTOMER COPY'));
+    commands.add(LF);
+    commands.addAll(ascii.encode('THANKS FOR VISITING'));
+    commands.add(LF);
+    commands.addAll(ascii.encode('POWERED BY FOODKIE EXPRESS'));
+    commands.add(LF);
+    commands.add(LF);
+
+    
+    commands.addAll([LF, LF, LF, LF]); 
+    commands.addAll([GS, 0x56, 0x00]); 
 
     return commands;
   }
 
-  // Test print method
+  
   Future<bool> printTest() async {
     try {
-      // Prepare a comprehensive test receipt
       final testData = {
         'items': [
           {'name': 'Test Item 1', 'quantity': 2, 'price': 10.50},

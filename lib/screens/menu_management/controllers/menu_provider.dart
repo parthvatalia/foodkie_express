@@ -8,17 +8,17 @@ class MenuProvider with ChangeNotifier {
 
   MenuProvider(this._menuService);
 
-  // Categories
+  
   Stream<List<CategoryModel>> getCategories() {
     return _menuService.getCategories();
   }
 
-  // Menu Items
+  
   Stream<List<MenuItemModel>> getMenuItems({String? categoryId}) {
     return _menuService.getMenuItems(categoryId: categoryId);
   }
 
-  // Category Management
+  
   Future<String> addCategory(CategoryModel category) async {
     return await _menuService.addCategory(category);
   }
@@ -31,7 +31,7 @@ class MenuProvider with ChangeNotifier {
     await _menuService.deleteCategory(id);
   }
 
-  // Search
+  
   Future<List<MenuItemModel>> searchItems(String query) async {
     return await _menuService.searchItems(query);
   }

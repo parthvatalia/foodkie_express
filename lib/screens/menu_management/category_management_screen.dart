@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:foodkie_express/api/menu_service.dart';
 import 'package:foodkie_express/models/category.dart';
-import 'package:foodkie_express/widgets/animated_button.dart';
 
 class CategoryManagementScreen extends StatefulWidget {
   const CategoryManagementScreen({Key? key}) : super(key: key);
@@ -72,7 +71,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Category Name
+                        
                         TextField(
                           controller: _categoryNameController,
                           decoration: const InputDecoration(
@@ -82,7 +81,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Description
+                        
                         TextField(
                           controller: _categoryDescriptionController,
                           decoration: const InputDecoration(
@@ -93,14 +92,14 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                         ),
                         const SizedBox(height: 24),
 
-                        // Subcategories
+                        
                         const Text(
                           'Subcategories',
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 8),
 
-                        // Subcategory List
+                        
                         if (_subcategories.isNotEmpty)
                           Wrap(
                             spacing: 8,
@@ -123,7 +122,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
 
                         const SizedBox(height: 8),
 
-                        // Add Subcategory
+                        
                         Row(
                           children: [
                             Expanded(
@@ -191,7 +190,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
     try {
       final menuService = Provider.of<MenuService>(context, listen: false);
 
-      // Get the maximum order number to place the new category at the end
+      
       final categories = await menuService.getCategories().first;
       final maxOrder =
           categories.isEmpty
@@ -305,8 +304,8 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                     }
                   }
                 },
-                child: const Text('Delete'),
                 style: TextButton.styleFrom(foregroundColor: Colors.red),
+                child: const Text('Delete'),
               ),
             ],
           ),
@@ -318,7 +317,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
       final menuService = Provider.of<MenuService>(context, listen: false);
       final categories = await menuService.getCategories().first;
 
-      // Reorder the categories based on the new order
+      
       if (newIndex > oldIndex) {
         newIndex -= 1;
       }
@@ -327,7 +326,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
       final item = items.removeAt(oldIndex);
       items.insert(newIndex, item);
 
-      // Update the order property of each category
+      
       for (int i = 0; i < items.length; i++) {
         await menuService.updateCategory(items[i].id, {'order': i});
       }
@@ -462,8 +461,8 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddCategoryDialog,
-        child: const Icon(Icons.add),
         tooltip: 'Add Category',
+        child: const Icon(Icons.add),
       ),
     );
   }

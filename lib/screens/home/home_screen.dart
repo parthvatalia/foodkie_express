@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:foodkie_express/screens/home/profile_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:foodkie_express/routes.dart';
-import 'package:foodkie_express/screens/auth/controllers/auth_provider.dart';
 import 'package:foodkie_express/screens/home/controllers/cart_provider.dart';
 import 'package:foodkie_express/api/menu_service.dart';
 import 'package:foodkie_express/api/profile_service.dart';
@@ -13,10 +12,8 @@ import 'package:foodkie_express/widgets/category_card.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fa;
-
 import '../../utils/menu_data_loader.dart';
 import '../../utils/update_checker.dart';
-import '../../widgets/quick_order_sheet.dart';
 import 'menu_screen.dart';
 import 'order_history_screen.dart';
 
@@ -37,26 +34,23 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadRestaurantProfile();
-    //loadMenu();
+
     UpdateChecker(context).checkForUpdates();
   }
 
-  // Add at the top of the file with the other methods
   static Future<void> setupOrderCounter(String userId) async {
     try {
-      FirebaseFirestore _firestore = FirebaseFirestore.instance;
-      // Check if counter document already exists
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
       final counterDoc =
-          await _firestore
+          await firestore
               .collection('users')
               .doc(userId)
               .collection('counters')
               .doc('orders')
               .get();
 
-      // Only create if it doesn't exist
       if (!counterDoc.exists) {
-        await _firestore
+        await firestore
             .collection('users')
             .doc(userId)
             .collection('counters')
@@ -79,7 +73,6 @@ class _HomeScreenState extends State<HomeScreen> {
   loadMenu() async {
     final user = fa.FirebaseAuth.instance.currentUser;
     if (user != null) {
-      // Load menu data for this user
       await MenuDataLoader.loadInitialMenuData(user.uid);
     }
   }
@@ -102,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
       });
       final user = fa.FirebaseAuth.instance.currentUser;
       await setupOrderCounter(user!.uid);
-      // If profile doesn't exist, prompt user to create one
+
       if (profile == null && mounted) {
         _showCreateProfileDialog();
       }
@@ -284,9 +277,11 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Welcome Card
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0,vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8.0,
+                  vertical: 8,
+                ),
                 child: Card(
                   elevation: 4,
                   shape: RoundedRectangleBorder(
@@ -309,8 +304,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           textAlign: TextAlign.center,
                         ),
                         ElevatedButton.icon(
-                          onPressed:
-                              () => _changePage(1), // Navigate to Menu tab
+                          onPressed: () => _changePage(1),
                           icon: const Icon(Icons.menu_book),
                           label: const Text('View Menu'),
                           style: ElevatedButton.styleFrom(
@@ -329,31 +323,28 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: Text(
                   'Quick Actions',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               const SizedBox(height: 8),
               _buildQuickActions(),
               const SizedBox(height: 8),
 
-              // Categories Section
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
                 child: Text(
                   'Categories',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               const SizedBox(height: 10),
               _buildCategoriesList(),
 
               const SizedBox(height: 10),
-
-
             ],
           ),
         );
@@ -363,12 +354,10 @@ class _HomeScreenState extends State<HomeScreen> {
     return StreamBuilder<List<CategoryModel>>(
       stream: Provider.of<MenuService>(context).getCategories(),
       builder: (context, snapshot) {
-        // Handle loading state
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        // Handle error state
         if (snapshot.hasError) {
           return Center(
             child: Column(
@@ -383,10 +372,8 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         }
 
-        // Get categories, defaulting to empty list
         final categories = snapshot.data ?? [];
 
-        // Handle empty categories
         if (categories.isEmpty) {
           return Card(
             margin: const EdgeInsets.all(16),
@@ -423,7 +410,7 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisCount: 3,
             crossAxisSpacing: 10,
             mainAxisSpacing: 10,
-            childAspectRatio: 0.8
+            childAspectRatio: 0.8,
           ),
           scrollDirection: Axis.vertical,
           shrinkWrap: true,

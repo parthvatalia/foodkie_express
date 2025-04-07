@@ -66,7 +66,7 @@ class _EditBillScreenState extends State<EditBillScreen> {
         throw Exception('Order ID is required');
       }
 
-      // Load order details
+      
       final orderService = Provider.of<OrderService>(context, listen: false);
       final order = await orderService.getOrderById(widget.orderId!);
 
@@ -74,7 +74,7 @@ class _EditBillScreenState extends State<EditBillScreen> {
         throw Exception('Order not found');
       }
 
-      // Clear cart and populate with order items
+      
       _cartProvider.clearCart();
 
       for (var item in order.items) {
@@ -90,11 +90,11 @@ class _EditBillScreenState extends State<EditBillScreen> {
       _customerPhoneController.text = order.customerPhone ?? '';
       _paymentMethod = order.paymentMethod;
 
-      // Load menu items for adding new items
+      
       final menuService = Provider.of<MenuService>(context, listen: false);
       final items = await menuService.getMenuItems().first;
 
-      // Set order notes
+      
       _notesController.text = order.notes ?? '';
 
       setState(() {
@@ -130,19 +130,19 @@ class _EditBillScreenState extends State<EditBillScreen> {
   }
 
   Future<void> _saveUpdatedOrder() async {
-    // First, check if cart is empty
+    
     if (_cartProvider.items.isEmpty) {
       AnimatedSnackBar.material(
         'Cannot save an empty order',
         type: AnimatedSnackBarType.error,
         mobileSnackBarPosition: MobileSnackBarPosition.bottom,
         desktopSnackBarPosition: DesktopSnackBarPosition.bottomCenter,
-        duration: Duration(seconds: 2),
+        duration: const Duration(seconds: 2),
       ).show(context);
       return;
     }
 
-    // Show bottom sheet with customer details
+    
     final result = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
@@ -164,7 +164,7 @@ class _EditBillScreenState extends State<EditBillScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Bottom Sheet Header
+                
                 Center(
                   child: Text(
                     'Confirm Order Details',
@@ -175,7 +175,7 @@ class _EditBillScreenState extends State<EditBillScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Customer Name
+                
                 TextField(
                   controller: _customerNameController,
                   decoration: InputDecoration(
@@ -188,7 +188,7 @@ class _EditBillScreenState extends State<EditBillScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Customer Phone
+                
                 TextField(
                   controller: _customerPhoneController,
                   decoration: InputDecoration(
@@ -202,7 +202,7 @@ class _EditBillScreenState extends State<EditBillScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Payment Method
+                
                 Text(
                   'Payment Method',
                   style: Theme.of(context).textTheme.titleMedium,
@@ -239,7 +239,7 @@ class _EditBillScreenState extends State<EditBillScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Order Notes
+                
                 TextField(
                   controller: _notesController,
                   decoration: InputDecoration(
@@ -252,7 +252,7 @@ class _EditBillScreenState extends State<EditBillScreen> {
                   maxLines: 3,
                 ),
 
-                // Total Price
+                
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -287,7 +287,7 @@ class _EditBillScreenState extends State<EditBillScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Confirm and Cancel Buttons
+                
                 Row(
                   children: [
                     Expanded(
@@ -300,7 +300,7 @@ class _EditBillScreenState extends State<EditBillScreen> {
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () {
-                          // Validate customer name and phone number
+                          
                           Navigator.of(context).pop(true);
                         },
                         child: const Text('Confirm'),
@@ -316,14 +316,14 @@ class _EditBillScreenState extends State<EditBillScreen> {
       ),
     );
 
-    // If user confirms, proceed with saving
+    
     if (result == true) {
       setState(() {
         _isSaving = true;
       });
 
       try {
-        // Create order items from cart
+        
         final orderItems = _cartProvider.items.map((item) =>
             OrderItem(
               id: item.id,
@@ -334,10 +334,10 @@ class _EditBillScreenState extends State<EditBillScreen> {
             )
         ).toList();
 
-        // Calculate new total
+        
         final totalAmount = _cartProvider.totalPrice;
 
-        // Create updated order
+        
         final updatedOrder = _order!.copyWith(
           items: orderItems,
           totalAmount: totalAmount,
@@ -347,30 +347,30 @@ class _EditBillScreenState extends State<EditBillScreen> {
           paymentMethod: _paymentMethod,
         );
 
-        // Save to database
+        
         final orderService = Provider.of<OrderService>(context, listen: false);
 
-        // First, delete the old order
+        
         await orderService.deleteOrder(widget.orderId!);
 
-        // Then create a new order with the same order number
+        
         final data = updatedOrder.toMap();
         data['orderNumber'] = _order!.orderNumber;
 
-        // Add the order with a new ID
+        
         final orderId = await orderService.createOrder(OrderModel.fromMap(data, ''));
 
-        // Show success
+        
         if (mounted) {
           AnimatedSnackBar.material(
             'Bill updated successfully',
             type: AnimatedSnackBarType.success,
             mobileSnackBarPosition: MobileSnackBarPosition.bottom,
             desktopSnackBarPosition: DesktopSnackBarPosition.bottomCenter,
-            duration: Duration(seconds: 2),
+            duration: const Duration(seconds: 2),
           ).show(context);
 
-          // Navigate back to order details
+          
           Navigator.pushReplacementNamed(
             context,
             AppRoutes.orderDetails,
@@ -378,7 +378,7 @@ class _EditBillScreenState extends State<EditBillScreen> {
           );
         }
       } catch (e) {
-        // Show error
+        
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -416,10 +416,10 @@ class _EditBillScreenState extends State<EditBillScreen> {
       type: AnimatedSnackBarType.success,
       mobileSnackBarPosition: MobileSnackBarPosition.bottom,
       desktopSnackBarPosition: DesktopSnackBarPosition.bottomCenter,
-      duration: Duration(seconds: 2),
+      duration: const Duration(seconds: 2),
     ).show(context);
 
-    // Clear search
+    
     _searchController.clear();
     setState(() {
       _isSearching = false;
@@ -487,7 +487,7 @@ class _EditBillScreenState extends State<EditBillScreen> {
   Widget _buildEditOrderContent() {
     return Column(
       children: [
-        // Search bar to add items
+        
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: TextField(
@@ -513,7 +513,7 @@ class _EditBillScreenState extends State<EditBillScreen> {
           ),
         ),
 
-        // Search results
+        
         if (_isSearching && _searchResults.isNotEmpty)
           Container(
             height: 200,
@@ -541,7 +541,7 @@ class _EditBillScreenState extends State<EditBillScreen> {
             ),
           ),
 
-        // Current cart/bill items
+        
         Expanded(
           child: Consumer<CartProvider>(
             builder: (context, cartProvider, _) {
@@ -651,7 +651,7 @@ class _EditBillScreenState extends State<EditBillScreen> {
           ),
         ),
 
-        // Summary and actions
+        
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(

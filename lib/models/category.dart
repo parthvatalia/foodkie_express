@@ -25,7 +25,7 @@ class CategoryModel extends Equatable {
     List<String> subCategories = const [],
   }) {
     return CategoryModel(
-      id: '', // Empty ID for new categories
+      id: '', 
       name: name,
       description: description,
       order: order,

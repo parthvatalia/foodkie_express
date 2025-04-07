@@ -1,35 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:foodkie_express/screens/analytics/sales_analytics_screen.dart';
 
-// Auth Screens
+
 import 'package:foodkie_express/screens/auth/splash_screen.dart';
 import 'package:foodkie_express/screens/auth/login_screen.dart';
 import 'package:foodkie_express/screens/auth/otp_screen.dart';
 import 'package:foodkie_express/screens/billing/edit_bill_screen.dart';
 import 'package:foodkie_express/screens/home/controllers/order_details_screen.dart';
 
-// Home Screens
+
 import 'package:foodkie_express/screens/home/home_screen.dart';
 import 'package:foodkie_express/screens/home/menu_screen.dart';
 import 'package:foodkie_express/screens/home/cart_screen.dart';
 import 'package:foodkie_express/screens/home/order_history_screen.dart';
 import 'package:foodkie_express/screens/home/profile_screen.dart';
 
-// Menu Management Screens
+
 import 'package:foodkie_express/screens/menu_management/add_item_screen.dart';
 import 'package:foodkie_express/screens/menu_management/edit_item_screen.dart';
 import 'package:foodkie_express/screens/menu_management/category_management_screen.dart';
 
-// Models (for route arguments)
+
 import 'package:foodkie_express/models/item.dart';
-import 'package:foodkie_express/models/category.dart';
-import 'package:foodkie_express/models/order.dart';
 
 class AppRoutes {
   static final GlobalKey<NavigatorState> navigatorKey =
       GlobalKey<NavigatorState>();
 
-  // Route names
+  
   static const String splash = '/';
   static const String login = '/login';
   static const String otp = '/otp';
@@ -46,7 +44,7 @@ class AppRoutes {
   static const String salesAnalytics = '/sales-analytics';
 
 
-  // Navigation methods
+  
   static Future<void> navigateToHome() async {
     navigatorKey.currentState?.pushNamedAndRemoveUntil(home, (route) => false);
   }
@@ -55,7 +53,7 @@ class AppRoutes {
     navigatorKey.currentState?.pushNamedAndRemoveUntil(login, (route) => false);
   }
 
-  // Route generator
+  
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case splash:
@@ -125,7 +123,7 @@ class AppRoutes {
         );
 
       default:
-        // If the route is not found, show an error page
+        
         return MaterialPageRoute(
           builder:
               (_) => Scaffold(

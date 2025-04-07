@@ -34,7 +34,7 @@ class QuantitySelector extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          // Decrement Button
+          
           IconButton(
             icon: const Icon(Icons.remove),
             onPressed: quantity > minQuantity ? onDecrement : null,
@@ -44,13 +44,13 @@ class QuantitySelector extends StatelessWidget {
             constraints: const BoxConstraints(maxWidth: 30),
           ),
 
-          // Quantity Display
+          
           Text(
             '$quantity',
             style: Theme.of(context).textTheme.titleMedium,
           ),
 
-          // Increment Button
+          
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: quantity < maxQuantity ? onIncrement : null,

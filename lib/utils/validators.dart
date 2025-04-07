@@ -1,11 +1,11 @@
 class Validators {
-  // Phone number validation
+  
   static String? validatePhone(String? value) {
     if (value == null || value.isEmpty) {
       return 'Phone number is required';
     }
 
-    // Basic phone validation - should have 8-15 digits
+    
     final cleanedValue = value.replaceAll(RegExp(r'[^0-9]'), '');
     if (cleanedValue.length < 8 || cleanedValue.length > 15) {
       return 'Enter a valid phone number';
@@ -14,10 +14,10 @@ class Validators {
     return null;
   }
 
-  // Email validation
+  
   static String? validateEmail(String? value) {
     if (value == null || value.isEmpty) {
-      return null; // Email is optional
+      return null; 
     }
 
     final emailRegex = RegExp(
@@ -30,7 +30,7 @@ class Validators {
     return null;
   }
 
-  // Required field validation
+  
   static String? validateRequired(String? value, String fieldName) {
     if (value == null || value.trim().isEmpty) {
       return '$fieldName is required';
@@ -39,7 +39,7 @@ class Validators {
     return null;
   }
 
-  // Price validation
+  
   static String? validatePrice(String? value) {
     if (value == null || value.isEmpty) {
       return 'Price is required';
@@ -58,7 +58,7 @@ class Validators {
     return null;
   }
 
-  // Quantity validation
+  
   static String? validateQuantity(String? value) {
     if (value == null || value.isEmpty) {
       return 'Quantity is required';

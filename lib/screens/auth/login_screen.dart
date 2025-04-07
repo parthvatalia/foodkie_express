@@ -16,10 +16,10 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
-  String _selectedCountryCode = '+91'; // Default to India
+  String _selectedCountryCode = '+91'; 
   bool _isLoading = false;
 
-  final List<String> _countryCodes = ['+91', '+1', '+44', '+61', '+65']; // Add more as needed
+  final List<String> _countryCodes = ['+91', '+1', '+44', '+61', '+65']; 
 
   @override
   void dispose() {
@@ -40,7 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       await authProvider.sendOTP(phoneNumber);
 
-      // Navigate to OTP verification screen
+      
       if (!mounted) return;
       Navigator.pushNamed(
         context,
@@ -50,7 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       String errorMessage = e.toString();
 
-      // Handle specific Firebase errors
+      
       if (e.toString().contains('too-many-requests')) {
         errorMessage = 'Too many login attempts. Please try again later or use a different phone number.';
       }
@@ -83,7 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                  SizedBox(height: MediaQuery.sizeOf(context).height * 0.1),
-                // Logo or Animation
+                
                 Center(
                   child: Lottie.asset(
                     height: MediaQuery.sizeOf(context).height * 0.3,
@@ -93,7 +93,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 40),
-                // Welcome Text
+                
                 Text(
                   'Welcome to Foodkie Express',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -108,11 +108,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 40),
-                // Phone Input
+                
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Country Code Dropdown
+                    
                     Container(
                       decoration: BoxDecoration(
                         border: Border.all(
@@ -145,7 +145,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    // Phone TextField
+                    
                     Expanded(
                       child: TextFormField(
                         controller: _phoneController,
@@ -165,7 +165,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
                 const SizedBox(height: 40),
-                // Continue Button
+                
                 AnimatedButton(
                   onPressed: _isLoading ? null : _sendOTP,
                   isLoading: _isLoading,
@@ -178,7 +178,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                // Terms & Privacy Policy
+                
                 Text(
                   'By continuing, you agree to our Terms of Service and Privacy Policy',
                   style: Theme.of(context).textTheme.bodySmall,

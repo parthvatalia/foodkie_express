@@ -28,8 +28,8 @@ class _MenuScreenState extends State<MenuScreen> {
   @override
   void initState() {
     super.initState();
-    // Don't set _selectedCategoryId here, so "All" is selected by default
-    // Only set it if explicitly passed in widget.categoryId
+    
+    
     if (widget.categoryId != null) {
       _selectedCategoryId = widget.categoryId;
     }
@@ -79,7 +79,7 @@ class _MenuScreenState extends State<MenuScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Search Bar
+            
             Padding(
               padding: const EdgeInsets.only(right: 12.0),
               child: Row(
@@ -158,10 +158,10 @@ class _MenuScreenState extends State<MenuScreen> {
               ),
             ),
 
-            // Categories Tabs
+            
             if (!_isSearching) _buildCategoryTabs(),
 
-            // Menu Items
+            
             Expanded(
               child: _isSearching ? _buildSearchResults() : _buildMenuItems(),
             ),
@@ -219,15 +219,15 @@ class _MenuScreenState extends State<MenuScreen> {
 
         return Column(
           children: [
-            // Main categories with "All" option
+            
             SizedBox(
               height: 50,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: categories.length + 1, // +1 for "All" option
+                itemCount: categories.length + 1, 
                 itemBuilder: (context, index) {
-                  // "All" option
+                  
                   if (index == 0) {
                     return Padding(
                       padding: const EdgeInsets.only(right: 8),
@@ -246,7 +246,7 @@ class _MenuScreenState extends State<MenuScreen> {
                     );
                   }
 
-                  // Regular category chips
+                  
                   final category = categories[index - 1];
                   final isSelected = category.id == _selectedCategoryId;
 
@@ -269,7 +269,7 @@ class _MenuScreenState extends State<MenuScreen> {
               ),
             ),
 
-            // Sub-categories if available
+            
             if (_selectedCategoryId != null) _buildSubCategoryTabs(categories),
           ],
         );
@@ -278,7 +278,7 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 
   Widget _buildSubCategoryTabs(List<CategoryModel> categories) {
-    // Find the selected category
+    
     final selectedCategory = categories.firstWhere(
       (category) => category.id == _selectedCategoryId,
       orElse: () => const CategoryModel(id: '', name: '', order: 0),
@@ -294,9 +294,9 @@ class _MenuScreenState extends State<MenuScreen> {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: selectedCategory.subCategories.length + 1,
-        // +1 for "All" option
+        
         itemBuilder: (context, index) {
-          // "All" option
+          
           if (index == 0) {
             return Padding(
               padding: const EdgeInsets.only(right: 8),
@@ -337,7 +337,7 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 
   Widget _buildMenuItems() {
-    // If no category is selected (All option), show all items
+    
     if (_selectedCategoryId == null) {
       return StreamBuilder<List<MenuItemModel>>(
         stream: Provider.of<MenuService>(context).getMenuItems(),
@@ -408,7 +408,7 @@ class _MenuScreenState extends State<MenuScreen> {
       );
     }
 
-    // If a specific category is selected, show filtered items
+    
     return StreamBuilder<List<MenuItemModel>>(
       stream: Provider.of<MenuService>(
         context,
@@ -424,7 +424,7 @@ class _MenuScreenState extends State<MenuScreen> {
 
         final items = snapshot.data ?? [];
 
-        // Filter by subcategory if selected
+        
         final filteredItems =
             _selectedSubCategory != null
                 ? items
@@ -597,27 +597,27 @@ class _MenuScreenState extends State<MenuScreen> {
       return;
     }
 
-    // Get the cart provider without triggering a rebuild of the menu
+    
     final cartProvider = Provider.of<CartProvider>(context, listen: false);
 
-    // Add item to cart
+    
     cartProvider.addItem(id: item.id, name: item.name, price: item.price);
 
-    // Get the quantity of this specific item
+    
     final totalCategoryItems =
         cartProvider.items
             .firstWhere((cartItem) => cartItem.name == item.name)
             .quantity
             .toString();
 
-    // Show notification
+    
     ScaffoldMessenger.of(context).removeCurrentSnackBar();
     AnimatedSnackBar.material(
       'total $totalCategoryItems ${item.name} added to the cart',
       type: AnimatedSnackBarType.success,
       mobileSnackBarPosition: MobileSnackBarPosition.bottom,
       desktopSnackBarPosition: DesktopSnackBarPosition.bottomCenter,
-      duration: Duration(seconds: 2),
+      duration: const Duration(seconds: 2),
     ).show(context);
   }
 }

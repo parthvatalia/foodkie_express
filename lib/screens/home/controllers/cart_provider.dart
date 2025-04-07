@@ -58,14 +58,14 @@ class CartProvider with ChangeNotifier {
     int quantity = 1,
     String? notes,
   }) {
-    // Check if item already exists in cart
+    
     final existingIndex = _items.indexWhere((item) => item.id == id);
 
     if (existingIndex >= 0) {
-      // Increment quantity if item exists
+      
       _items[existingIndex].quantity += quantity;
     } else {
-      // Add new item if it doesn't exist
+      
       _items.add(CartItem(
         id: id,
         name: name,
@@ -116,7 +116,7 @@ class CartProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Get item by ID
+  
   CartItem? getItemById(String id) {
     try {
       return _items.firstWhere((item) => item.id == id);
@@ -125,12 +125,12 @@ class CartProvider with ChangeNotifier {
     }
   }
 
-  // Check if item exists in cart
+  
   bool containsItem(String id) {
     return _items.any((item) => item.id == id);
   }
 
-  // Add a temporary item (not in menu)
+  
   void addCustomItem({
     required String name,
     required double price,

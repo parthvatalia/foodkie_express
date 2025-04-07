@@ -53,7 +53,7 @@ class CategoryCard extends StatelessWidget {
   }
 
   IconData _getCategoryIcon() {
-    // Return appropriate icon based on category name
+    
     final name = category.name.toLowerCase();
 
     if (name.contains('pizza') || name.contains('pie')) {
@@ -78,7 +78,7 @@ class CategoryCard extends StatelessWidget {
       return Icons.star;
     }
 
-    // Default icon
+    
     return Icons.restaurant_menu;
   }
 }

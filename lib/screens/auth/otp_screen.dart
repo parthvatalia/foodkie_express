@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pinput/pinput.dart';
-import 'package:foodkie_express/routes.dart';
 import 'package:foodkie_express/screens/auth/controllers/auth_provider.dart' as ap;
 import 'package:foodkie_express/widgets/animated_button.dart';
 
@@ -27,7 +26,7 @@ class _OTPScreenState extends State<OTPScreen> {
   bool _isLoading = false;
   bool _isResendEnabled = false;
   String _errorMessage = "";
-  int _resendTimer = 30; // Seconds
+  int _resendTimer = 30; 
   Timer? _timer;
 
   @override
@@ -54,7 +53,7 @@ class _OTPScreenState extends State<OTPScreen> {
     });
   }
 
-// In your login/verification screen
+
   Future<void> _verifyOTP() async {
     setState(() {
       _isLoading = true;
@@ -65,14 +64,14 @@ class _OTPScreenState extends State<OTPScreen> {
       final authService = Provider.of<AuthService>(context, listen: false);
       final userCredential = await authService.verifyOTP(_otpController.text);
 
-      // Verification successful
-      // You can access userCredential.user here if needed
+      
+      
       if (mounted) {
-        // Navigate to next screen
+        
         Navigator.of(context).pushNamedAndRemoveUntil('/home',(route) => false,);
       }
     } on FirebaseAuthException catch (e) {
-      // Handle specific Firebase auth errors
+      
       String errorMessage;
 
       switch (e.code) {
@@ -93,7 +92,7 @@ class _OTPScreenState extends State<OTPScreen> {
         _errorMessage = errorMessage;
       });
     } catch (e) {
-      // Handle other errors
+      
       setState(() {
         _errorMessage = 'An unexpected error occurred: ${e.toString()}';
       });
@@ -117,21 +116,21 @@ class _OTPScreenState extends State<OTPScreen> {
       final authProvider = Provider.of<ap.AuthProvider>(context, listen: false);
       await authProvider.sendOTP(widget.phoneNumber);
 
-      // Restart timer
+      
       _startResendTimer();
 
-      // Show success message
+      
       if (mounted) {
         AnimatedSnackBar.material(
           'OTP resent successfully',
           type: AnimatedSnackBarType.success,
           mobileSnackBarPosition: MobileSnackBarPosition.bottom,
           desktopSnackBarPosition: DesktopSnackBarPosition.bottomCenter,
-          duration: Duration(seconds: 2),
+          duration: const Duration(seconds: 2),
         ).show(context);
       }
     } catch (e) {
-      // Show error
+      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -182,7 +181,7 @@ class _OTPScreenState extends State<OTPScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 20),
-              // Instructions
+              
               Text(
                 'Enter Verification Code',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -195,7 +194,7 @@ class _OTPScreenState extends State<OTPScreen> {
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
               const SizedBox(height: 40),
-              // OTP Input
+              
               Center(
                 child: Pinput(
                   controller: _otpController,
@@ -221,7 +220,7 @@ class _OTPScreenState extends State<OTPScreen> {
                 ),
               ),
               const SizedBox(height: 40),
-              // Verify Button
+              
               AnimatedButton(
                 onPressed: _isLoading ? null : _verifyOTP,
                 isLoading: _isLoading,
@@ -234,7 +233,7 @@ class _OTPScreenState extends State<OTPScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              // Resend OTP
+              
               Center(
                 child: TextButton(
                   onPressed: _isResendEnabled ? _resendOTP : null,

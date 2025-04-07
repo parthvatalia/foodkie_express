@@ -12,23 +12,11 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 500),
-    );
-
-    _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        _checkAuthAndNavigate();
-      }
-    });
-
-    _controller.forward();
+    _checkAuthAndNavigate();
   }
 
   Future<void> _checkAuthAndNavigate() async {
@@ -43,32 +31,16 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   }
 
   @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Logo or Animation
-            Lottie.asset(
-              height: MediaQuery.sizeOf(context).height * 0.5,
-              width: MediaQuery.sizeOf(context).height * 0.9,
-              'assets/animations/food_delivery.json',
-              controller: _controller,
-              onLoaded: (composition) {
-                _controller.duration = composition.duration;
-                _controller.forward();
-              },
-            ),
+
             const SizedBox(height: 30),
-            // App Name
+            
             Text(
               'Foodkie Express',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
@@ -77,7 +49,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               ),
             ),
             const SizedBox(height: 12),
-            // Tagline
+            
             Text(
               'Fast food management, faster service',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
@@ -85,7 +57,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               ),
             ),
             const SizedBox(height: 50),
-            // Loading indicator
+            
             CircularProgressIndicator(
               color: Theme.of(context).colorScheme.primary,
             ),

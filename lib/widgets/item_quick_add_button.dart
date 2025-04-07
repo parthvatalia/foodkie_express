@@ -21,7 +21,7 @@ class ItemQuickAddButton extends StatelessWidget {
         final isInCart = cartItem != null;
 
         if (isInCart) {
-          // Item is in cart, show quantity controls
+          
           return Container(
             height: 36,
             decoration: BoxDecoration(
@@ -34,7 +34,7 @@ class ItemQuickAddButton extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Decrement button
+                
                 ClipRRect(
                   borderRadius: const BorderRadius.horizontal(left: Radius.circular(17)),
                   child: Material(
@@ -51,7 +51,7 @@ class ItemQuickAddButton extends StatelessWidget {
                   ),
                 ),
 
-                // Quantity display
+                
                 SizedBox(
                   width: 28,
                   child: Text(
@@ -63,7 +63,7 @@ class ItemQuickAddButton extends StatelessWidget {
                   ),
                 ),
 
-                // Increment button
+                
                 ClipRRect(
                   borderRadius: const BorderRadius.horizontal(right: Radius.circular(17)),
                   child: Material(
@@ -86,7 +86,7 @@ class ItemQuickAddButton extends StatelessWidget {
             ),
           );
         } else {
-          // Item not in cart, show add button
+          
           return ElevatedButton.icon(
             icon: const Icon(Icons.add, size: 18),
             label: const Text('Add'),

@@ -6,7 +6,7 @@ import '../screens/settings/bluetooth_printer_screen.dart';
 Future<void> checkAndSetupPrinter(BuildContext context) async {
   final printerService = PrinterService();
 
-  // Check if Bluetooth is enabled
+  
   bool bluetoothEnabled = await printerService.isBluetoothEnabled();
   if (!bluetoothEnabled) {
     bool enabled = await printerService.requestEnableBluetooth();
@@ -18,11 +18,11 @@ Future<void> checkAndSetupPrinter(BuildContext context) async {
     }
   }
 
-  // Check if a printer is already configured
+  
   Map<String, String>? savedPrinter = await printerService.getSavedBluetoothPrinter();
 
   if (savedPrinter != null) {
-    // Check if printer is connected
+    
     bool connected = await printerService.isPrinterConnected();
 
     if (connected) {
@@ -36,7 +36,7 @@ Future<void> checkAndSetupPrinter(BuildContext context) async {
     }
   }
 
-  // Show printer selection screen if no printer or printer not connected
+  
   if (context.mounted) {
     Navigator.push(
       context,

@@ -25,7 +25,7 @@ class OrderModel extends Equatable {
     this.orderNumber,
     this.customerName,
     this.customerPhone,
-    this.paymentMethod = 'Cash', // Default value
+    this.paymentMethod = 'Cash', 
   });
 
   factory OrderModel.create({
@@ -37,7 +37,7 @@ class OrderModel extends Equatable {
     String? customerPhone,
     String paymentMethod = 'Cash',
   }) {
-    // Generate order number (YYMMDD-XXXX format)
+    
     final now = DateTime.now();
     final datePart = '${now.year.toString().substring(2)}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
     final randomPart = (1000 + now.millisecondsSinceEpoch % 9000).toString();

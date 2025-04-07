@@ -52,13 +52,13 @@ class _CartItemWidgetState extends State<CartItemWidget> {
       margin: const EdgeInsets.only(bottom: 10),
       child: Column(
         children: [
-          // Main item info
+          
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Item info
+                
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -92,7 +92,7 @@ class _CartItemWidgetState extends State<CartItemWidget> {
                   ),
                 ),
 
-                // Quantity controls
+                
                 Row(
                   children: [
                     IconButton(
@@ -117,23 +117,23 @@ class _CartItemWidgetState extends State<CartItemWidget> {
             ),
           ),
 
-          // Divider
+          
           Divider(
             height: 1,
             thickness: 1,
             color: Colors.grey[200],
           ),
 
-          // Total row
+          
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Notes & Remove
+                
                 Row(
                   children: [
-                    // Add Note button
+                    
                     TextButton.icon(
                       icon: Icon(
                         _isExpanded ? Icons.edit_note : Icons.note_add_outlined,
@@ -145,7 +145,7 @@ class _CartItemWidgetState extends State<CartItemWidget> {
                       ),
                       onPressed: () {
                         if (_isExpanded) {
-                          // Save note
+                          
                           widget.onNotesChanged(_notesController.text);
                         }
                         setState(() {
@@ -158,7 +158,7 @@ class _CartItemWidgetState extends State<CartItemWidget> {
                       ),
                     ),
 
-                    // Remove button
+                    
                     TextButton.icon(
                       icon: const Icon(
                         Icons.delete_outline,
@@ -178,7 +178,7 @@ class _CartItemWidgetState extends State<CartItemWidget> {
                   ],
                 ),
 
-                // Total price
+                
                 Text(
                   '₹${widget.item.totalPrice.toStringAsFixed(2)}',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -189,7 +189,7 @@ class _CartItemWidgetState extends State<CartItemWidget> {
             ),
           ),
 
-          // Notes field (expandable)
+          
           AnimatedCrossFade(
             firstChild: const SizedBox(height: 0),
             secondChild: Padding(

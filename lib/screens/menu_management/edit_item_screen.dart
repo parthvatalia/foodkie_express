@@ -34,7 +34,7 @@ class _EditItemScreenState extends State<EditItemScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize controllers with existing data
+    
     _nameController = TextEditingController(text: widget.item.name);
     _priceController = TextEditingController(
       text: widget.item.price.toString(),
@@ -81,7 +81,7 @@ class _EditItemScreenState extends State<EditItemScreen> {
     try {
       final double price = double.parse(_priceController.text.trim());
 
-      // Prepare update data
+      
       final updateData = {
         'name': _nameController.text.trim(),
         'description': _descriptionController.text.trim(),
@@ -140,8 +140,8 @@ class _EditItemScreenState extends State<EditItemScreen> {
                 onPressed: () async {
                   _confirmDelete().then((val) => {Navigator.pop(context)});
                 },
-                child: const Text('Delete'),
                 style: TextButton.styleFrom(foregroundColor: Colors.red),
+                child: const Text('Delete'),
               ),
             ],
           ),
@@ -161,16 +161,16 @@ class _EditItemScreenState extends State<EditItemScreen> {
 
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('go to Menu'),
                 style: TextButton.styleFrom(foregroundColor: Colors.red),
+                child: const Text('go to Menu'),
 
               ),
               TextButton(
                 onPressed: () async {
                   _updateItem();
                 },
-                child: const Text('Yes Edit it'),
                 style: TextButton.styleFrom(foregroundColor: Colors.green),
+                child: const Text('Yes Edit it'),
               ),
             ],
           ),
@@ -246,7 +246,7 @@ class _EditItemScreenState extends State<EditItemScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Image Picker
+                        
                         Center(
                           child: GestureDetector(
                             onTap: _pickImage,
@@ -298,7 +298,7 @@ class _EditItemScreenState extends State<EditItemScreen> {
                         ),
                         const SizedBox(height: 24),
 
-                        // Item Details
+                        
                         Text(
                           'Item Details',
                           style: Theme.of(context).textTheme.titleLarge
@@ -306,7 +306,7 @@ class _EditItemScreenState extends State<EditItemScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Name
+                        
                         TextFormField(
                           controller: _nameController,
                           decoration: InputDecoration(
@@ -325,7 +325,7 @@ class _EditItemScreenState extends State<EditItemScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Price
+                        
                         TextFormField(
                           controller: _priceController,
                           decoration: InputDecoration(
@@ -351,7 +351,7 @@ class _EditItemScreenState extends State<EditItemScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Description
+                        
                         TextFormField(
                           controller: _descriptionController,
                           decoration: InputDecoration(
@@ -365,7 +365,7 @@ class _EditItemScreenState extends State<EditItemScreen> {
                         ),
                         const SizedBox(height: 24),
 
-                        // Category
+                        
                         Text(
                           'Category',
                           style: Theme.of(context).textTheme.titleLarge
@@ -373,7 +373,7 @@ class _EditItemScreenState extends State<EditItemScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Category Dropdown
+                        
                         StreamBuilder<List<CategoryModel>>(
                           stream:
                               Provider.of<MenuService>(context).getCategories(),
@@ -410,7 +410,7 @@ class _EditItemScreenState extends State<EditItemScreen> {
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Category Dropdown
+                                
                                 DropdownButtonFormField<String>(
                                   value: _selectedCategoryId,
                                   decoration: InputDecoration(
@@ -431,19 +431,19 @@ class _EditItemScreenState extends State<EditItemScreen> {
                                       setState(() {
                                         _selectedCategoryId = value;
                                         _selectedSubCategory =
-                                            null; // Reset subcategory
+                                            null; 
                                       });
                                     }
                                   },
                                 ),
                                 const SizedBox(height: 16),
 
-                                // Subcategory Dropdown (if category has subcategories)
+                                
                                 categories
                                         .firstWhere(
                                           (c) => c.id == _selectedCategoryId,
                                           orElse:
-                                              () => CategoryModel(
+                                              () => const CategoryModel(
                                                 id: '',
                                                 name: '',
                                                 order: 0,
@@ -471,7 +471,7 @@ class _EditItemScreenState extends State<EditItemScreen> {
                                               (c) =>
                                                   c.id == _selectedCategoryId,
                                               orElse:
-                                                  () => CategoryModel(
+                                                  () => const CategoryModel(
                                                     id: '',
                                                     name: '',
                                                     order: 0,
@@ -499,7 +499,7 @@ class _EditItemScreenState extends State<EditItemScreen> {
                         ),
                         const SizedBox(height: 24),
 
-                        // Status Options
+                        
                         Text(
                           'Status',
                           style: Theme.of(context).textTheme.titleLarge
@@ -507,7 +507,7 @@ class _EditItemScreenState extends State<EditItemScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Availability Switch
+                        
                         SwitchListTile(
                           title: const Text('Available'),
                           subtitle: const Text(
@@ -522,7 +522,7 @@ class _EditItemScreenState extends State<EditItemScreen> {
                           contentPadding: EdgeInsets.zero,
                         ),
 
-                        // Featured Switch
+                        
                         SwitchListTile(
                           title: const Text('Featured'),
                           subtitle: const Text(
@@ -538,7 +538,7 @@ class _EditItemScreenState extends State<EditItemScreen> {
                         ),
                         const SizedBox(height: 32),
 
-                        // Update Button
+                        
                         AnimatedButton(
                           onPressed: _isLoading ? null : _updateItem,
                           isLoading: _isLoading,

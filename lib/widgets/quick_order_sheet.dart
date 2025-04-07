@@ -51,19 +51,19 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
   bool _showCustomerDetails = false;
   late CartProvider _cartProvider;
 
-  // Animation controllers
-  double _sheetHeight = 0.6; // 60% of screen height initially
+  
+  final double _sheetHeight = 0.6; 
 
   @override
   void initState() {
     super.initState();
     _cartProvider = Provider.of<CartProvider>(context, listen: false);
 
-    // Clear cart if not in edit mode, otherwise load the order items
+    
     if (!widget.isEditMode) {
       _cartProvider.clearCart();
 
-      // Add any pre-selected items
+      
       if (widget.preSelectedItems != null) {
         for (var item in widget.preSelectedItems!) {
           _cartProvider.addItem(
@@ -74,7 +74,7 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
         }
       }
     } else {
-      // In edit mode, we'll load the order data
+      
       _loadOrderData();
     }
   }
@@ -99,10 +99,10 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
       final order = await orderService.getOrderById(widget.orderId!);
 
       if (order != null) {
-        // Clear existing cart items
+        
         _cartProvider.clearCart();
 
-        // Load order items into cart
+        
         for (var item in order.items) {
           _cartProvider.addItem(
             id: item.id,
@@ -113,15 +113,15 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
           );
         }
 
-        // Set customer details
+        
         _customerNameController.text = order.customerName ?? '';
         _customerPhoneController.text = order.customerPhone ?? '';
         _notesController.text = order.notes ?? '';
 
-        // Set payment method
+        
         setState(() {
           _paymentMethod = order.paymentMethod;
-          // Show customer details section if customer info exists
+          
           _showCustomerDetails = order.customerName?.isNotEmpty == true ||
               order.customerPhone?.isNotEmpty == true;
         });
@@ -158,7 +158,7 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
     });
 
     try {
-      // Create order items
+      
       final orderItems = _cartProvider.items.map((item) =>
           OrderItem(
             id: item.id,
@@ -172,11 +172,11 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
       final orderService = Provider.of<OrderService>(context, listen: false);
 
       if (widget.isEditMode && widget.orderId != null) {
-        // Update existing order
-        // First, delete the old order
+        
+        
         await orderService.deleteOrder(widget.orderId!);
 
-        // Then create a new order with the updated items
+        
         final updatedOrder = OrderModel.create(
           items: orderItems,
           totalAmount: _cartProvider.totalPrice,
@@ -188,7 +188,7 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
 
         final newOrderId = await orderService.createOrder(updatedOrder);
 
-        // Show success message
+        
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -197,8 +197,8 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
             ),
           );
 
-          // Navigate to order details screen
-          Navigator.pop(context); // Close sheet
+          
+          Navigator.pop(context); 
           Navigator.pushReplacementNamed(
             context,
             AppRoutes.orderDetails,
@@ -206,7 +206,7 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
           );
         }
       } else {
-        // Create new order
+        
         final newOrder = OrderModel.create(
           items: orderItems,
           totalAmount: _cartProvider.totalPrice,
@@ -218,14 +218,14 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
 
         final orderId = await orderService.createOrder(newOrder);
 
-        // Clear cart
+        
         _cartProvider.clearCart();
 
-        // Show success message and navigate
+        
         if (mounted) {
-          Navigator.pop(context); // Close sheet
+          Navigator.pop(context); 
 
-          // Show success dialog
+          
           _showOrderSuccess(context, orderId);
         }
       }
@@ -252,7 +252,7 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: Row(
+        title: const Row(
           children: [
             Icon(Icons.check_circle, color: Colors.green, size: 30),
             SizedBox(width: 10),
@@ -263,7 +263,7 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Close'),
+            child: const Text('Close'),
           ),
           ElevatedButton(
             onPressed: () {
@@ -274,7 +274,7 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
                 arguments: {'orderId': orderId},
               );
             },
-            child: Text('View Order'),
+            child: const Text('View Order'),
           ),
         ],
       ),
@@ -307,7 +307,7 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
               ),
               child: Column(
                 children: [
-                  // Draggable handle
+                  
                   Container(
                     width: 40,
                     height: 5,
@@ -318,7 +318,7 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
                     ),
                   ),
 
-                  // Header
+                  
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Row(
@@ -338,13 +338,13 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
                     ),
                   ),
 
-                  // Main content (scrollable)
+                  
                   Expanded(
                     child: ListView(
                       controller: scrollController,
                       padding: const EdgeInsets.all(20),
                       children: [
-                        // Customer Details Toggle
+                        
                         Row(
                           children: [
                             Text(
@@ -363,7 +363,7 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
                           ],
                         ),
 
-                        // Optional Customer details
+                        
                         if (_showCustomerDetails)
                           AnimatedContainer(
                             duration: const Duration(milliseconds: 300),
@@ -371,7 +371,7 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
                               children: [
                                 Row(
                                   children: [
-                                    // Customer Name
+                                    
                                     Expanded(
                                       child: TextField(
                                         controller: _customerNameController,
@@ -388,7 +388,7 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
                                       ),
                                     ),
                                     const SizedBox(width: 8),
-                                    // Customer Phone
+                                    
                                     Expanded(
                                       child: TextField(
                                         controller: _customerPhoneController,
@@ -412,14 +412,14 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
                             ),
                           ),
 
-                        // Order Items Section
+                        
                         Text(
                           'Order Items',
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         const SizedBox(height: 10),
 
-                        // Order items list (with Consumer for reactivity)
+                        
                         Consumer<CartProvider>(
                           builder: (context, cart, _) {
                             if (cart.items.isEmpty) {
@@ -442,7 +442,7 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
                                     padding: const EdgeInsets.all(10.0),
                                     child: Row(
                                       children: [
-                                        // Item info
+                                        
                                         Expanded(
                                           child: Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -471,7 +471,7 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
                                           ),
                                         ),
 
-                                        // Quantity controls
+                                        
                                         Container(
                                           decoration: BoxDecoration(
                                             border: Border.all(color: Colors.grey[300]!),
@@ -479,7 +479,7 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
                                           ),
                                           child: Row(
                                             children: [
-                                              // Decrement button
+                                              
                                               IconButton(
                                                 icon: const Icon(Icons.remove),
                                                 iconSize: 16,
@@ -491,7 +491,7 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
                                                 onPressed: () => cart.decrementQuantity(item.id),
                                               ),
 
-                                              // Quantity
+                                              
                                               SizedBox(
                                                 width: 30,
                                                 child: Text(
@@ -503,7 +503,7 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
                                                 ),
                                               ),
 
-                                              // Increment button
+                                              
                                               IconButton(
                                                 icon: const Icon(Icons.add),
                                                 iconSize: 16,
@@ -518,7 +518,7 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
                                           ),
                                         ),
 
-                                        // Remove button
+                                        
                                         IconButton(
                                           icon: const Icon(Icons.delete_outline, color: Colors.red),
                                           onPressed: () => cart.removeItem(item.id),
@@ -534,7 +534,7 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
 
                         const SizedBox(height: 20),
 
-                        // Add custom item button
+                        
                         OutlinedButton.icon(
                           icon: const Icon(Icons.add),
                           label: const Text('Add Custom Item'),
@@ -546,7 +546,7 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
 
                         const SizedBox(height: 20),
 
-                        // Notes field
+                        
                         TextField(
                           controller: _notesController,
                           decoration: InputDecoration(
@@ -561,14 +561,14 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
 
                         const SizedBox(height: 20),
 
-                        // Payment method
+                        
                         Text(
                           'Payment Method',
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         const SizedBox(height: 10),
 
-                        // Payment options
+                        
                         Row(
                           children: [
                             Expanded(
@@ -605,7 +605,7 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
                     ),
                   ),
 
-                  // Bottom action bar
+                  
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
@@ -621,7 +621,7 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Order summary
+                        
                         Consumer<CartProvider>(
                           builder: (context, cart, _) => Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -646,7 +646,7 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
 
                         const SizedBox(height: 10),
 
-                        // Action button
+                        
                         AnimatedButton(
                           onPressed: _isProcessing ? null : _processOrder,
                           isLoading: _isProcessing,
@@ -705,7 +705,7 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
           ),
           ElevatedButton(
             onPressed: () {
-              // Validate input
+              
               final name = nameController.text.trim();
               final priceText = priceController.text.trim();
 
@@ -724,7 +724,7 @@ class _QuickOrderSheetState extends State<QuickOrderSheet> {
                 return;
               }
 
-              // Add custom item to cart
+              
               _cartProvider.addCustomItem(
                 name: name,
                 price: price,

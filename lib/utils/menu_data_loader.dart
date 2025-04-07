@@ -1,4 +1,4 @@
-// lib/utils/menu_data_loader.dart
+
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -6,10 +6,10 @@ import 'package:flutter/material.dart';
 class MenuDataLoader {
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Call this method after user authentication
+  
   static Future<void> loadInitialMenuData(String userId) async {
     try {
-      // Check if data already exists to avoid duplicate entries
+      
       final categoriesSnapshot =
           await _firestore
               .collection('users')
@@ -34,13 +34,13 @@ class MenuDataLoader {
   }
 
   static Future<void> _loadCategories(String userId) async {
-    // Reference to user's categories collection
+    
     final categoriesRef = _firestore
         .collection('users')
         .doc(userId)
         .collection('categories');
 
-    // Add pizza category
+    
     final pizzaCategoryRef = await categoriesRef.add({
       'name': 'Pizza',
       'description': 'Delicious pizzas with variety of toppings',
@@ -49,7 +49,7 @@ class MenuDataLoader {
       'subCategories': ['Live Dough Pizza', 'Chef\'s Special Pizza'],
     });
 
-    // Add sandwich category
+    
     await categoriesRef.add({
       'name': 'Sandwich',
       'description': 'Variety of sandwiches',
@@ -58,7 +58,7 @@ class MenuDataLoader {
       'subCategories': [],
     });
 
-    // Add garlic bread category
+    
     await categoriesRef.add({
       'name': 'Garlic Bread',
       'description': 'Freshly baked garlic bread',
@@ -67,7 +67,7 @@ class MenuDataLoader {
       'subCategories': [],
     });
 
-    // Add waffle category
+    
     await categoriesRef.add({
       'name': 'Waffle',
       'description': 'Sweet and savory waffles',
@@ -76,7 +76,7 @@ class MenuDataLoader {
       'subCategories': [],
     });
 
-    // Add fries category
+    
     await categoriesRef.add({
       'name': 'McCain French Fries',
       'description': 'Crispy french fries',
@@ -85,7 +85,7 @@ class MenuDataLoader {
       'subCategories': [],
     });
 
-    // Add extra dips category
+    
     await categoriesRef.add({
       'name': 'Extra Dips',
       'description': 'Additional dips for your food',
@@ -96,7 +96,7 @@ class MenuDataLoader {
   }
 
   static Future<void> _loadMenuItems(String userId) async {
-    // Get category references
+    
     final QuerySnapshot categories =
         await _firestore
             .collection('users')
@@ -109,14 +109,14 @@ class MenuDataLoader {
       categoryMap[doc.get('name')] = doc.id;
     }
 
-    // Reference to user's menuItems collection
+    
     final menuItemsRef = _firestore
         .collection('users')
         .doc(userId)
         .collection('menuItems');
 
-    // PIZZA ITEMS
-    // Live Dough Pizza
+    
+    
     await _addMenuItem(
       menuItemsRef: menuItemsRef,
       name: 'MARGHERITA',
@@ -249,7 +249,7 @@ class MenuDataLoader {
       isFeatured: false,
     );
 
-    // Chef's Special Pizza
+    
     await _addMenuItem(
       menuItemsRef: menuItemsRef,
       name: 'BESIL PESTO PIZZA',
@@ -331,7 +331,7 @@ class MenuDataLoader {
       isFeatured: false,
     );
 
-    // SANDWICH ITEMS
+    
     await _addMenuItem(
       menuItemsRef: menuItemsRef,
       name: 'BREAD BUTTER SANDWICH',
@@ -476,7 +476,7 @@ class MenuDataLoader {
       isAvailable: true,
     );
 
-    // GARLIC BREAD ITEMS
+    
     await _addMenuItem(
       menuItemsRef: menuItemsRef,
       name: 'CLASSIC GARLIC BREAD',
@@ -531,7 +531,7 @@ class MenuDataLoader {
       isAvailable: true,
     );
 
-    // WAFFLE ITEMS
+    
     await _addMenuItem(
       menuItemsRef: menuItemsRef,
       name: 'NAKED NUTELLA WAFFLE',
@@ -631,7 +631,7 @@ class MenuDataLoader {
       isAvailable: true,
     );
 
-    // FRIES ITEMS
+    
     await _addMenuItem(
       menuItemsRef: menuItemsRef,
       name: 'SALTED FRIES',
@@ -677,7 +677,7 @@ class MenuDataLoader {
       isAvailable: true,
     );
 
-    // EXTRA DIPS
+    
     await _addMenuItem(
       menuItemsRef: menuItemsRef,
       name: 'CHEESE DIP',

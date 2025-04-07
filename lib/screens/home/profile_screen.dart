@@ -4,7 +4,6 @@ import 'package:foodkie_express/screens/settings/bluetooth_printer_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:foodkie_express/api/profile_service.dart';
-import 'package:foodkie_express/api/auth_service.dart';
 import 'package:foodkie_express/models/profile.dart';
 import 'package:foodkie_express/routes.dart';
 import 'package:foodkie_express/screens/auth/controllers/auth_provider.dart';
@@ -54,7 +53,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         _profile = profile;
 
-        // Populate form fields if profile exists
+        
         if (profile != null) {
           _nameController.text = profile.name;
           _phoneController.text = profile.phoneNumber ?? '';
@@ -184,8 +183,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     );
                   }
                 },
-                child: const Text('Sign Out'),
                 style: TextButton.styleFrom(foregroundColor: Colors.red),
+                child: const Text('Sign Out'),
               ),
             ],
           ),
@@ -219,11 +218,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Restaurant Logo
+                        
                         Center(
                           child: Stack(
                             children: [
-                              // Logo
+                              
                               GestureDetector(
                                 onTap: _pickImage,
                                 child: CircleAvatar(
@@ -248,7 +247,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           : null,
                                 ),
                               ),
-                              // Edit button
+                              
                               Positioned(
                                 bottom: 0,
                                 right: 0,
@@ -276,7 +275,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 24),
 
-                        // Basic Information
+                        
                         Text(
                           'Basic Information',
                           style: Theme.of(context).textTheme.titleLarge
@@ -284,7 +283,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Restaurant Name
+                        
                         TextFormField(
                           controller: _nameController,
                           decoration: InputDecoration(
@@ -303,7 +302,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Phone Number
+                        
                         TextFormField(
                           controller: _phoneController,
                           decoration: InputDecoration(
@@ -317,7 +316,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Email
+                        
                         TextFormField(
                           controller: _emailController,
                           decoration: InputDecoration(
@@ -331,14 +330,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 24),
 
-                        // Address
+                        
                         Text(
                           'Address Information',
                           style: Theme.of(context).textTheme.titleLarge
                               ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 16),
-                        // Street Address
+                        
                         TextFormField(
                           controller: _addressController,
                           decoration: InputDecoration(
@@ -351,10 +350,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // City and State (Row)
+                        
                         Row(
                           children: [
-                            // City
+                            
                             Expanded(
                               child: TextFormField(
                                 controller: _cityController,
@@ -368,7 +367,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                             ),
                             const SizedBox(width: 12),
-                            // State
+                            
                             Expanded(
                               child: TextFormField(
                                 controller: _stateController,
@@ -385,7 +384,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Zip Code
+                        
                         TextFormField(
                           controller: _zipCodeController,
                           decoration: InputDecoration(
@@ -399,7 +398,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 24),
 
-                        // Description
+                        
                         Text(
                           'Additional Information',
                           style: Theme.of(context).textTheme.titleLarge
@@ -421,7 +420,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 32),
 
-                        // Save Button
+                        
                         AnimatedButton(
                           onPressed: _isLoading ? null : _saveProfile,
                           isLoading: _isLoading,
@@ -429,49 +428,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 24),
 
-                        // Additional Settings
-                        // Card(
-                        //   shape: RoundedRectangleBorder(
-                        //     borderRadius: BorderRadius.circular(12),
-                        //   ),
-                        //   child: Column(
-                        //     children: [
-                        //       ListTile(
-                        //         leading: const Icon(Icons.schedule),
-                        //         title: const Text('Business Hours'),
-                        //         subtitle: const Text('Set your restaurant\'s operating hours'),
-                        //         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                        //         onTap: () {
-                        //           // Navigate to business hours screen
-                        //           // This would be a separate screen to set opening/closing times
-                        //         },
-                        //       ),
-                        //       const Divider(),
-                        //       ListTile(
-                        //         leading: const Icon(Icons.print),
-                        //         title: const Text('Printer Settings'),
-                        //         subtitle: const Text('Configure your receipt printer'),
-                        //         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                        //         onTap: () {
-                        //           // Navigate to printer settings screen
-                        //         },
-                        //       ),
-                        //       const Divider(),
-                        //       ListTile(
-                        //         leading: const Icon(Icons.attach_money),
-                        //         title: const Text('Tax Settings'),
-                        //         subtitle: const Text('Configure sales tax rates'),
-                        //         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                        //         onTap: () {
-                        //           // Navigate to tax settings screen
-                        //         },
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
-                        // const SizedBox(height: 24),
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
 
-                        // Account Settings
+                        
                         Card(
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -491,7 +490,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     MaterialPageRoute(
                                       builder:
                                           (context) =>
-                                              BluetoothPrinterSelectionScreen(),
+                                              const BluetoothPrinterSelectionScreen(),
                                     ),
                                   );
                                 },
@@ -509,7 +508,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 32),
 
-                        // App Info
+                        
                         Center(
                           child: Column(
                             children: [

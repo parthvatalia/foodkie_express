@@ -26,13 +26,13 @@ class MenuItemCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: Column(
           children: [
-            // Item Info
+            
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Item Image
+                  
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: item.imageUrl != null && item.imageUrl!.isNotEmpty
@@ -68,7 +68,7 @@ class MenuItemCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
 
-                  // Item Details
+                  
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,7 +131,7 @@ class MenuItemCard extends StatelessWidget {
               ),
             ),
 
-            // Action Buttons
+            
             Container(
               decoration: BoxDecoration(
                 color: Colors.grey[50],
@@ -143,7 +143,7 @@ class MenuItemCard extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Availability Chip
+                  
                   Padding(
                     padding: const EdgeInsets.only(left: 12),
                     child: Chip(
@@ -164,7 +164,7 @@ class MenuItemCard extends StatelessWidget {
                     ),
                   ),
 
-                  // Add to Cart Button
+                  
                   TextButton.icon(
                     onPressed: item.isAvailable ? onAddToCart : null,
                     icon: const Icon(Icons.add_shopping_cart, size: 18),

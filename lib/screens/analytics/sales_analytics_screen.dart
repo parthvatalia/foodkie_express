@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:foodkie_express/api/order_service.dart';
 import 'package:foodkie_express/models/order.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter_charts/flutter_charts.dart';
 
 class SalesAnalyticsScreen extends StatefulWidget {
   const SalesAnalyticsScreen({Key? key}) : super(key: key);
@@ -21,7 +20,7 @@ class _SalesAnalyticsScreenState extends State<SalesAnalyticsScreen> with Single
   String _paymentMethodFilter = 'All';
   TabController? _tabController;
 
-  // Total amounts
+  
   double _totalSales = 0;
   int _totalOrders = 0;
   double _averageOrderValue = 0;
@@ -30,7 +29,7 @@ class _SalesAnalyticsScreenState extends State<SalesAnalyticsScreen> with Single
     'UPI': 0,
   };
 
-  // Date range for filtering
+  
   DateTime _startDate = DateTime.now().subtract(const Duration(days: 30));
   DateTime _endDate = DateTime.now();
 
@@ -75,13 +74,13 @@ class _SalesAnalyticsScreenState extends State<SalesAnalyticsScreen> with Single
     try {
       final orderService = Provider.of<OrderService>(context, listen: false);
 
-      // Load orders from the last 90 days
+      
       final startDate = DateTime.now().subtract(const Duration(days: 90));
       final endDate = DateTime.now();
 
       final orders = await orderService.getOrdersByDateRange(startDate, endDate);
 
-      // Set initial date range based on available data
+      
       if (orders.isNotEmpty) {
         final firstOrderDate = orders.last.createdAt?.toDate() ?? startDate;
         _startDate = firstOrderDate.isAfter(startDate) ? startDate : firstOrderDate;
@@ -109,7 +108,7 @@ class _SalesAnalyticsScreenState extends State<SalesAnalyticsScreen> with Single
   }
 
   void _applyFilters() {
-    // Filter by date range
+    
     var filtered = _allOrders.where((order) {
       final orderDate = order.createdAt?.toDate();
       if (orderDate == null) return false;
@@ -118,18 +117,18 @@ class _SalesAnalyticsScreenState extends State<SalesAnalyticsScreen> with Single
           orderDate.isBefore(_endDate.add(const Duration(days: 1)));
     }).toList();
 
-    // Filter by payment method if not "All"
+    
     if (_paymentMethodFilter != 'All') {
       filtered = filtered.where((order) =>
       order.paymentMethod == _paymentMethodFilter).toList();
     }
 
-    // Calculate totals
+    
     _totalSales = filtered.fold(0, (sum, order) => sum + order.totalAmount);
     _totalOrders = filtered.length;
     _averageOrderValue = _totalOrders > 0 ? _totalSales / _totalOrders : 0;
 
-    // Calculate payment method totals
+    
     _paymentMethodTotals = {
       'Cash': filtered.where((o) => o.paymentMethod == 'Cash')
           .fold(0, (sum, order) => sum + order.totalAmount),
@@ -184,7 +183,7 @@ class _SalesAnalyticsScreenState extends State<SalesAnalyticsScreen> with Single
           ? const Center(child: CircularProgressIndicator())
           : Column(
         children: [
-          // Payment Method Filter
+          
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Row(
@@ -217,7 +216,7 @@ class _SalesAnalyticsScreenState extends State<SalesAnalyticsScreen> with Single
             ),
           ),
 
-          // Summary Cards
+          
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Row(
@@ -246,7 +245,7 @@ class _SalesAnalyticsScreenState extends State<SalesAnalyticsScreen> with Single
             ),
           ),
 
-          // Payment Method Breakdown
+          
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Card(
@@ -287,7 +286,7 @@ class _SalesAnalyticsScreenState extends State<SalesAnalyticsScreen> with Single
             ),
           ),
 
-          // Chart
+          
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -402,7 +401,7 @@ class _SalesAnalyticsScreenState extends State<SalesAnalyticsScreen> with Single
 
 
   Widget _buildDailyChart() {
-    // Group orders by day
+    
     final Map<DateTime, List<OrderModel>> groupedData = {};
 
     for (var order in _filteredOrders) {
@@ -421,17 +420,17 @@ class _SalesAnalyticsScreenState extends State<SalesAnalyticsScreen> with Single
       }
     }
 
-    // Create chart data
+    
     final sortedDates = groupedData.keys.toList()..sort((a, b) => a.compareTo(b));
 
-    // If no data, show message
+    
     if (sortedDates.isEmpty) {
       return const Center(
         child: Text('No daily data available for the selected period'),
       );
     }
 
-    // Calculate max value for scaling
+    
     double maxSales = 0;
     for (var date in sortedDates) {
       final dayTotal = groupedData[date]!.fold(0.0,
@@ -458,7 +457,7 @@ class _SalesAnalyticsScreenState extends State<SalesAnalyticsScreen> with Single
 
                 return Stack(
                   children: [
-                    // Y-axis line (left side)
+                    
                     Positioned(
                       left: 30,
                       top: 0,
@@ -469,7 +468,7 @@ class _SalesAnalyticsScreenState extends State<SalesAnalyticsScreen> with Single
                       ),
                     ),
 
-                    // X-axis line (bottom)
+                    
                     Positioned(
                       left: 30,
                       right: 10,
@@ -480,7 +479,7 @@ class _SalesAnalyticsScreenState extends State<SalesAnalyticsScreen> with Single
                       ),
                     ),
 
-                    // Y-axis labels
+                    
                     Positioned(
                       left: 0,
                       top: 0,
@@ -497,7 +496,7 @@ class _SalesAnalyticsScreenState extends State<SalesAnalyticsScreen> with Single
                       ),
                     ),
 
-                    // Bars
+                    
                     Positioned(
                       left: 30,
                       right: 10,
@@ -511,7 +510,7 @@ class _SalesAnalyticsScreenState extends State<SalesAnalyticsScreen> with Single
                           final dayTotal = groupedData[date]!.fold(0.0,
                                   (sum, order) => sum + order.totalAmount);
 
-                          // Calculate bar height as percentage of max value
+                          
                           final barHeight = maxSales > 0
                               ? (dayTotal / maxSales) * (chartHeight - 30)
                               : 0.0;
@@ -558,13 +557,13 @@ class _SalesAnalyticsScreenState extends State<SalesAnalyticsScreen> with Single
   }
 
   Widget _buildWeeklyChart() {
-    // Group orders by week
+    
     final Map<String, List<OrderModel>> groupedData = {};
 
     for (var order in _filteredOrders) {
       if (order.createdAt != null) {
         final date = order.createdAt!.toDate();
-        // Calculate week number
+        
         final weekNumber = (date.difference(DateTime(date.year, 1, 1)).inDays / 7).ceil();
         final weekKey = '${date.year}-W$weekNumber';
 
@@ -576,7 +575,7 @@ class _SalesAnalyticsScreenState extends State<SalesAnalyticsScreen> with Single
       }
     }
 
-    // Create chart data
+    
     final List<String> weekLabels = [];
     final List<BarChartGroupData> barGroups = [];
 
@@ -587,7 +586,7 @@ class _SalesAnalyticsScreenState extends State<SalesAnalyticsScreen> with Single
       final totalForWeek = groupedData[week]!
           .fold(0.0, (sum, order) => sum + order.totalAmount);
 
-      // Use week number for label
+      
       final weekNumber = week.split('-W')[1];
       weekLabels.add('W$weekNumber');
 
@@ -670,7 +669,7 @@ class _SalesAnalyticsScreenState extends State<SalesAnalyticsScreen> with Single
   }
 
   Widget _buildMonthlyChart() {
-    // Group orders by month
+    
     final Map<String, List<OrderModel>> groupedData = {};
 
     for (var order in _filteredOrders) {
@@ -686,7 +685,7 @@ class _SalesAnalyticsScreenState extends State<SalesAnalyticsScreen> with Single
       }
     }
 
-    // Prepare data for pie chart
+    
     final List<PieChartSectionData> sections = [];
     final Map<String, double> monthlySales = {};
 
@@ -695,7 +694,7 @@ class _SalesAnalyticsScreenState extends State<SalesAnalyticsScreen> with Single
       monthlySales[entry.key] = monthTotal;
     }
 
-    // Convert to proper month names for display
+    
     final Map<String, String> monthNames = {};
     for (var monthKey in monthlySales.keys) {
       final parts = monthKey.split('-');
@@ -705,7 +704,7 @@ class _SalesAnalyticsScreenState extends State<SalesAnalyticsScreen> with Single
       monthNames[monthKey] = DateFormat('MMM yyyy').format(DateTime(year, month));
     }
 
-    // Create pie chart sections with different colors
+    
     final List<Color> sectionColors = [
       Colors.blue,
       Colors.green,
@@ -739,7 +738,7 @@ class _SalesAnalyticsScreenState extends State<SalesAnalyticsScreen> with Single
       colorIndex++;
     }
 
-    // If we have data, show the pie chart
+    
     if (sections.isNotEmpty) {
       return Column(
         children: [

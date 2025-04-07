@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AppAnimations {
-  // Fade In Animation
+  
   static Widget fadeIn({
     required Widget child,
     required bool animate,
@@ -16,7 +16,7 @@ class AppAnimations {
     );
   }
 
-  // Slide In Animation
+  
   static Widget slideIn({
     required Widget child,
     required bool animate,
@@ -37,7 +37,7 @@ class AppAnimations {
     );
   }
 
-  // Scale Animation
+  
   static Widget scale({
     required Widget child,
     required bool animate,
@@ -58,7 +58,7 @@ class AppAnimations {
     );
   }
 
-  // Container Animation (size, color, etc.)
+  
   static Widget animatedContainer({
     required Widget child,
     required bool animate,
@@ -81,7 +81,7 @@ class AppAnimations {
     );
   }
 
-  // Page Transition Animation
+  
   static Route<T> pageTransition<T>({
     required Widget page,
     bool rightToLeft = true,
@@ -94,7 +94,7 @@ class AppAnimations {
       reverseTransitionDuration: duration,
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         final begin = Offset(rightToLeft ? 1.0 : -1.0, 0.0);
-        final end = Offset.zero;
+        const end = Offset.zero;
         final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
         final offsetAnimation = animation.drive(tween);
 
@@ -106,7 +106,7 @@ class AppAnimations {
     );
   }
 
-  // Staggered List Animation Helper
+  
   static Duration staggeredDuration(int index, {int delayMs = 50}) {
     return Duration(milliseconds: 300 + (index * delayMs));
   }

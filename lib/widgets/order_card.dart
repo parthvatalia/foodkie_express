@@ -24,7 +24,7 @@ class OrderCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
 
             children: [
-              // Order Header
+              
               Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -48,7 +48,7 @@ class OrderCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Order Number
+                      
                       Text(
                         'Order #${order.orderNumber ?? order.id.substring(0, 6)}',
                         style: Theme.of(context).textTheme.titleMedium
@@ -78,10 +78,10 @@ class OrderCard extends StatelessWidget {
                 ],
               ),
 
-              // Divider
+              
               Divider(height: 24, thickness: 1, color: Colors.grey[200]),
 
-              // Order Items
+              
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -96,14 +96,14 @@ class OrderCard extends StatelessWidget {
                 ],
               ),
 
-              // Divider
+              
               Divider(height: 24, thickness: 1, color: Colors.grey[200]),
 
-              // Order Footer
+              
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Order Date
+                  
                   if (order.createdAt != null)
                     Text(
                       DateFormat(
@@ -112,7 +112,7 @@ class OrderCard extends StatelessWidget {
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
 
-                  // Total
+                  
                   Text(
                     '₹${order.totalAmount.toStringAsFixed(2)}',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -130,7 +130,7 @@ class OrderCard extends StatelessWidget {
   }
 
   Widget _buildItemsList(BuildContext context) {
-    // Display up to 3 items, and "more" if there are additional items
+    
     final displayItems = order.items.take(3).toList();
     final hasMore = order.items.length > 3;
 
@@ -159,7 +159,7 @@ class OrderCard extends StatelessWidget {
   }
 }
 
-// Extension to capitalize first letter
+
 extension StringExtension on String {
   String capitalize() {
     return "${this[0].toUpperCase()}${substring(1)}";

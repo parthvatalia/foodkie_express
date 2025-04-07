@@ -37,7 +37,7 @@ class MenuItemModel extends Equatable {
     Map<String, dynamic>? customizations,
   }) {
     return MenuItemModel(
-      id: '', // Empty ID for new items
+      id: '', 
       name: name,
       description: description,
       price: price,

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  // Light Theme
+  
   static ThemeData lightTheme = ThemeData(
     useMaterial3: true,
     colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xFF3AAA35), // Primary green color
+      seedColor: const Color(0xFF3AAA35), 
       brightness: Brightness.light,
     ),
     appBarTheme: const AppBarTheme(
@@ -73,7 +73,7 @@ class AppTheme {
     fontFamily: 'Poppins',
   );
 
-  // Dark Theme
+  
   static ThemeData darkTheme = ThemeData(
     useMaterial3: true,
     colorScheme: ColorScheme.fromSeed(

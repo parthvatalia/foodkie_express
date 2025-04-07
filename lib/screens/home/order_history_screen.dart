@@ -88,7 +88,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     }
   }
 
-  // Reset all filters
+  
   void _clearAllFilters() {
     setState(() {
       _filterStatus = 'all';
@@ -103,7 +103,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     return Scaffold(
       body: Column(
         children: [
-          // Filter section with ExpansionPanelList
+          
           ExpansionPanelList(
             expansionCallback: (int index, bool isExpanded) {
               setState(() {
@@ -151,7 +151,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Time Period Filters
+                      
                       Text(
                         'Time Period',
                         style: Theme.of(context).textTheme.titleMedium,
@@ -226,7 +226,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Status Filters
+                      
                       Text(
                         'Order Status',
                         style: Theme.of(context).textTheme.titleMedium,
@@ -259,7 +259,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Custom Date Range Picker
+                      
                       InkWell(
                         onTap: _showDateRangePicker,
                         borderRadius: BorderRadius.circular(8),
@@ -297,7 +297,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
             ],
           ),
 
-          // Orders list
+          
           Expanded(
             child: StreamBuilder<List<OrderModel>>(
               stream: Provider.of<OrderService>(context).getOrders(),
@@ -312,17 +312,17 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
 
                 final orders = snapshot.data ?? [];
 
-                // Apply filters
+                
                 var filteredOrders = orders;
 
-                // Apply status filter
+                
                 if (_filterStatus != 'all') {
                   filteredOrders = filteredOrders
                       .where((order) => order.status == _filterStatus)
                       .toList();
                 }
 
-                // Apply date range filter
+                
                 if (_startDate != null && _endDate != null) {
                   final endDateWithTime = DateTime(
                     _endDate!.year,
@@ -391,7 +391,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   }
 }
 
-// Extension to capitalize first letter of string
+
 extension StringExtension on String {
   String capitalize() {
     return "${this[0].toUpperCase()}${substring(1)}";

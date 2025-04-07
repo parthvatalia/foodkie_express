@@ -129,7 +129,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Image Picker
+              
               Center(
                 child: GestureDetector(
                   onTap: _pickImage,
@@ -170,7 +170,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Item Details
+              
               Text(
                 'Item Details',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -179,7 +179,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Name
+              
               TextFormField(
                 controller: _nameController,
                 decoration: InputDecoration(
@@ -198,7 +198,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Price
+              
               TextFormField(
                 controller: _priceController,
                 decoration: InputDecoration(
@@ -222,7 +222,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Description
+              
               TextFormField(
                 controller: _descriptionController,
                 decoration: InputDecoration(
@@ -236,7 +236,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Category
+              
               Text(
                 'Category',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -245,7 +245,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Category Dropdown
+              
               StreamBuilder<List<CategoryModel>>(
                 stream: Provider.of<MenuService>(context).getCategories(),
                 builder: (context, snapshot) {
@@ -277,7 +277,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Category Dropdown
+                      
                       DropdownButtonFormField<String>(
                         value: _selectedCategoryId,
                         decoration: InputDecoration(
@@ -295,18 +295,18 @@ class _AddItemScreenState extends State<AddItemScreen> {
                         onChanged: (value) {
                           setState(() {
                             _selectedCategoryId = value;
-                            _selectedSubCategory = null; // Reset subcategory
+                            _selectedSubCategory = null; 
                           });
                         },
                       ),
                       const SizedBox(height: 16),
 
-                      // Subcategory Dropdown (if category has subcategories)
+                      
                       if (_selectedCategoryId != null) ...[
-                        // Find selected category
+                        
                         categories.firstWhere(
                               (c) => c.id == _selectedCategoryId,
-                          orElse: () => CategoryModel(id: '', name: '', order: 0),
+                          orElse: () => const CategoryModel(id: '', name: '', order: 0),
                         ).subCategories.isNotEmpty
                             ? DropdownButtonFormField<String>(
                           value: _selectedSubCategory,
@@ -324,7 +324,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                             ...categories
                                 .firstWhere(
                                   (c) => c.id == _selectedCategoryId,
-                              orElse: () => CategoryModel(id: '', name: '', order: 0),
+                              orElse: () => const CategoryModel(id: '', name: '', order: 0),
                             )
                                 .subCategories
                                 .map((subCategory) {
@@ -348,7 +348,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Status Options
+              
               Text(
                 'Status',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -357,7 +357,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Availability Switch
+              
               SwitchListTile(
                 title: const Text('Available'),
                 subtitle: const Text('Toggle if this item is currently available'),
@@ -370,7 +370,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                 contentPadding: EdgeInsets.zero,
               ),
 
-              // Featured Switch
+              
               SwitchListTile(
                 title: const Text('Featured'),
                 subtitle: const Text('Toggle if this is a featured item'),
@@ -384,7 +384,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
               ),
               const SizedBox(height: 32),
 
-              // Save Button
+              
               AnimatedButton(
                 onPressed: _isLoading ? null : _saveItem,
                 isLoading: _isLoading,

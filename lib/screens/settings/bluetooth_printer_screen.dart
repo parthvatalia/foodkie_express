@@ -31,7 +31,7 @@ class _BluetoothPrinterSelectionScreenState extends State<BluetoothPrinterSelect
     });
 
     try {
-      // First request permissions
+      
       bool permissionsGranted = await _printerService.requestBluetoothPermissions();
       if (!permissionsGranted) {
         setState(() {
@@ -49,15 +49,15 @@ class _BluetoothPrinterSelectionScreenState extends State<BluetoothPrinterSelect
         return;
       }
 
-      // Continue with Bluetooth checks
+      
       _isBluetoothEnabled = await _printerService.isBluetoothEnabled();
 
-      // If Bluetooth is enabled, get saved printer and paired devices
+      
       if (_isBluetoothEnabled) {
         _currentPrinter = await _printerService.getSavedBluetoothPrinter();
         _devices = await _printerService.getAvailableBluetoothDevices();
 
-        // Check if the saved printer is connected
+        
         if (_currentPrinter != null) {
           _isPrinterConnected = await _printerService.isPrinterConnected();
         }
@@ -87,7 +87,7 @@ class _BluetoothPrinterSelectionScreenState extends State<BluetoothPrinterSelect
 
       if (mounted) {
         if (enabled) {
-          _loadBluetoothState(); // Reload state after Bluetooth is enabled
+          _loadBluetoothState(); 
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Bluetooth must be enabled to use a printer')),
@@ -110,17 +110,17 @@ class _BluetoothPrinterSelectionScreenState extends State<BluetoothPrinterSelect
     });
 
     try {
-      // Save printer
+      
       await _printerService.saveBluetoothPrinter(
           device.address,
           device.name ?? 'Unknown Printer'
       );
 
-      // Test printer connection
+      
       _isPrinterConnected = await _printerService.isPrinterConnected();
 
       if (_isPrinterConnected) {
-        // Test print
+        
         bool testSuccess = await _printerService.printTest();
 
         if (mounted) {
@@ -146,7 +146,7 @@ class _BluetoothPrinterSelectionScreenState extends State<BluetoothPrinterSelect
         }
       }
 
-      // Reload state
+      
       await _loadBluetoothState();
     } catch (e) {
       debugPrint('Error selecting printer: $e');
@@ -232,7 +232,7 @@ class _BluetoothPrinterSelectionScreenState extends State<BluetoothPrinterSelect
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Current printer status
+        
         if (_currentPrinter != null)
           Container(
             padding: const EdgeInsets.all(16),
@@ -284,9 +284,9 @@ class _BluetoothPrinterSelectionScreenState extends State<BluetoothPrinterSelect
             ),
           ),
 
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: const Text(
+        const Padding(
+          padding: EdgeInsets.all(16),
+          child: Text(
             'Select a printer from the list below:',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),

@@ -1,4 +1,4 @@
-// This screen is referenced in the routes but needs to be created
+
 import 'package:animated_snack_bar/animated_snack_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:foodkie_express/screens/home/order_history_screen.dart';
@@ -9,7 +9,6 @@ import 'package:foodkie_express/api/profile_service.dart';
 import 'package:foodkie_express/models/order.dart';
 import 'package:foodkie_express/models/profile.dart';
 import 'package:foodkie_express/widgets/animated_button.dart';
-import 'package:lottie/lottie.dart';
 
 import '../../../routes.dart';
 import '../../../utils/printer_services.dart';
@@ -48,7 +47,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
         throw Exception('Order ID is required');
       }
 
-      // Load order details
+      
       final orderService = Provider.of<OrderService>(context, listen: false);
       final order = await orderService.getOrderById(widget.orderId!);
 
@@ -56,7 +55,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
         throw Exception('Order not found');
       }
 
-      // Load restaurant profile
+      
       final profileService = Provider.of<ProfileService>(
         context,
         listen: false,
@@ -98,11 +97,11 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
       return;
     }
 
-    // Check if a printer is saved
+    
     Map<String, String>? savedPrinter =
         await printerService.getSavedBluetoothPrinter();
     if (savedPrinter == null) {
-      // Ask user if they want to set up a printer
+      
       bool setupPrinter =
           await showDialog(
             context: context,
@@ -137,10 +136,10 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
       return;
     }
 
-    // Check if printer is connected
+    
     bool connected = await printerService.isPrinterConnected();
     if (!connected) {
-      // Ask user if they want to set up a different printer
+      
       bool setupPrinter =
           await showDialog(
             context: context,
@@ -188,14 +187,17 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
               )
               .toList();
 
-      // Add restaurant information to receipt data
+      
       final receiptData = {
         'items': items,
         'total': _order!.totalAmount,
         'notes': _order!.notes,
+        'customerName': _order!.customerName,
+        'customerPhone': _order!.customerPhone,
+        'paymentMethod': _order!.paymentMethod,
         'timestamp':
             _order!.createdAt?.toDate().toString() ?? DateTime.now().toString(),
-        // Include restaurant information
+        
         'restaurant': {
           'name': _profile?.name ?? 'Foodkie Express',
           'address': _profile?.formattedAddress ?? '',
@@ -248,7 +250,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
       final orderService = Provider.of<OrderService>(context, listen: false);
       await orderService.updateOrderStatus(widget.orderId!, status);
 
-      // Reload the order data
+      
       await _loadData();
 
       if (mounted) {
@@ -323,7 +325,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   }
 
   Widget _buildOrderDetails() {
-    // Format timestamps if available
+    
     final createdAt =
         _order!.createdAt != null
             ? DateFormat(
@@ -414,7 +416,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                       ),
                     ),
                   const SizedBox(height: 12),
-                  // Restaurant info
+                  
                   if (_profile != null) ...[
                     const Divider(),
                     Text(
@@ -454,7 +456,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                         ),
                       ),
                     if (_order!.customerPhone!.isNotEmpty) ...[
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Text(
                         '${_order!.customerPhone}',
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
@@ -466,7 +468,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                 ),
               ),
             ),
-          // Order Items
+          
           Text(
             'Order Items',
             style: Theme.of(
@@ -519,7 +521,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
             ),
           ),
 
-          // Order Notes
+          
           if (_order!.notes != null && _order!.notes!.isNotEmpty) ...[
             Text(
               'Order Notes',
@@ -537,7 +539,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
             ),
           ],
 
-          // Total Summary
+          
           Text(
             'Order Summary',
             style: Theme.of(
@@ -593,7 +595,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
             ),
           ),
 
-          // Print Button
+          
           Row(
             children: [
               Expanded(

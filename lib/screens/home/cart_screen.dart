@@ -25,7 +25,7 @@ class _CartScreenState extends State<CartScreen> {
       TextEditingController();
 
   bool _isProcessing = false;
-  bool _showCustomerDetails = false;
+  final bool _showCustomerDetails = false;
   String _paymentMethod = 'Cash';
 
   @override
@@ -37,7 +37,7 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   Future<void> _placeOrder() {
-    // Show bottom sheet for customer details before placing order
+    
     return _showCustomerDetailsBottomSheet(
       onConfirm: () async {
         final cartProvider = Provider.of<CartProvider>(context, listen: false);
@@ -48,7 +48,7 @@ class _CartScreenState extends State<CartScreen> {
             type: AnimatedSnackBarType.info,
             mobileSnackBarPosition: MobileSnackBarPosition.bottom,
             desktopSnackBarPosition: DesktopSnackBarPosition.bottomCenter,
-            duration: Duration(seconds: 2),
+            duration: const Duration(seconds: 2),
           ).show(context);
           return;
         }
@@ -58,7 +58,7 @@ class _CartScreenState extends State<CartScreen> {
         });
 
         try {
-          // Create order items
+          
           final orderItems =
               cartProvider.items
                   .map(
@@ -72,7 +72,7 @@ class _CartScreenState extends State<CartScreen> {
                   )
                   .toList();
 
-          // Create order with customer details and payment method
+          
           final newOrder = OrderModel.create(
             items: orderItems,
             totalAmount: cartProvider.totalPrice,
@@ -82,20 +82,20 @@ class _CartScreenState extends State<CartScreen> {
             paymentMethod: _paymentMethod,
           );
 
-          // Save to database
+          
           final orderService = Provider.of<OrderService>(
             context,
             listen: false,
           );
           final orderId = await orderService.createOrder(newOrder);
 
-          // Clear cart
+          
           cartProvider.clearCart();
 
-          // Show success
+          
           _showOrderSuccess(orderId);
         } catch (e) {
-          // Show error
+          
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Error: ${e.toString()}'),
@@ -112,7 +112,7 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   Future<void> _printReceipt() {
-    // Show bottom sheet for customer details before printing
+    
     return _showCustomerDetailsBottomSheet(
       onConfirm: () async {
         final cartProvider = Provider.of<CartProvider>(context, listen: false);
@@ -123,7 +123,7 @@ class _CartScreenState extends State<CartScreen> {
             type: AnimatedSnackBarType.info,
             mobileSnackBarPosition: MobileSnackBarPosition.bottom,
             desktopSnackBarPosition: DesktopSnackBarPosition.bottomCenter,
-            duration: Duration(seconds: 2),
+            duration: const Duration(seconds: 2),
           ).show(context);
           return;
         }
@@ -165,7 +165,7 @@ class _CartScreenState extends State<CartScreen> {
               type: AnimatedSnackBarType.success,
               mobileSnackBarPosition: MobileSnackBarPosition.bottom,
               desktopSnackBarPosition: DesktopSnackBarPosition.bottomCenter,
-              duration: Duration(seconds: 2),
+              duration: const Duration(seconds: 2),
             ).show(context);
           } else {
             AnimatedSnackBar.material(
@@ -173,7 +173,7 @@ class _CartScreenState extends State<CartScreen> {
               type: AnimatedSnackBarType.error,
               mobileSnackBarPosition: MobileSnackBarPosition.bottom,
               desktopSnackBarPosition: DesktopSnackBarPosition.bottomCenter,
-              duration: Duration(seconds: 2),
+              duration: const Duration(seconds: 2),
             ).show(context);
           }
         } catch (e) {
@@ -191,10 +191,11 @@ class _CartScreenState extends State<CartScreen> {
       },
     );
   }
+
   Future<void> _showCustomerDetailsBottomSheet({
     required Future<void> Function() onConfirm,
   }) {
-    // Create a local variable to track payment method changes
+    
     String localPaymentMethod = _paymentMethod;
 
     return showModalBottomSheet(
@@ -203,147 +204,157 @@ class _CartScreenState extends State<CartScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (bottomSheetContext) => StatefulBuilder(
-        builder: (context, setModalState) => Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(bottomSheetContext).viewInsets.bottom,
-            left: 16,
-            right: 16,
-            top: 16,
+      builder:
+          (bottomSheetContext) => StatefulBuilder(
+            builder:
+                (context, setModalState) => Padding(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(bottomSheetContext).viewInsets.bottom,
+                    left: 16,
+                    right: 16,
+                    top: 16,
+                  ),
+                  child: Form(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            'Customer Details',
+                            style:
+                                Theme.of(
+                                  bottomSheetContext,
+                                ).textTheme.headlineSmall,
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 16),
+
+                          
+                          TextFormField(
+                            controller: _customerNameController,
+                            decoration: InputDecoration(
+                              labelText: 'Customer Name',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Please enter customer name';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
+                          
+                          TextFormField(
+                            controller: _customerPhoneController,
+                            decoration: InputDecoration(
+                              labelText: 'Phone Number',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            keyboardType: TextInputType.phone,
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Please enter phone number';
+                              }
+                              
+                              if (!RegExp(
+                                r'^[0-9]{10}$',
+                              ).hasMatch(value.trim())) {
+                                return 'Please enter a valid 10-digit phone number';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
+                          
+                          Text(
+                            'Payment Method',
+                            style:
+                                Theme.of(
+                                  bottomSheetContext,
+                                ).textTheme.titleMedium,
+                          ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: RadioListTile<String>(
+                                  title: const Text('Cash'),
+                                  value: 'Cash',
+                                  groupValue: localPaymentMethod,
+                                  onChanged: (value) {
+                                    setModalState(() {
+                                      localPaymentMethod = value!;
+                                    });
+                                    
+                                    setState(() {
+                                      _paymentMethod = value!;
+                                    });
+                                  },
+                                  contentPadding: EdgeInsets.zero,
+                                ),
+                              ),
+                              Expanded(
+                                child: RadioListTile<String>(
+                                  title: const Text('UPI'),
+                                  value: 'UPI',
+                                  groupValue: localPaymentMethod,
+                                  onChanged: (value) {
+                                    setModalState(() {
+                                      localPaymentMethod = value!;
+                                    });
+                                    
+                                    setState(() {
+                                      _paymentMethod = value!;
+                                    });
+                                  },
+                                  contentPadding: EdgeInsets.zero,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+
+                          
+                          TextField(
+                            controller: _notesController,
+                            decoration: InputDecoration(
+                              labelText: 'Order Notes',
+                              hintText: 'Add any special instructions...',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            maxLines: 2,
+                          ),
+                          const SizedBox(height: 16),
+
+                          
+                          ElevatedButton(
+                            onPressed: () {
+                              
+                              Navigator.pop(bottomSheetContext);
+
+                              
+                              Future.microtask(() {
+                                onConfirm();
+                              });
+                            },
+                            child: const Text('Confirm'),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
           ),
-          child: Form(
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    'Customer Details',
-                    style: Theme.of(bottomSheetContext).textTheme.headlineSmall,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Customer Name
-                  TextFormField(
-                    controller: _customerNameController,
-                    decoration: InputDecoration(
-                      labelText: 'Customer Name',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Please enter customer name';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Customer Phone
-                  TextFormField(
-                    controller: _customerPhoneController,
-                    decoration: InputDecoration(
-                      labelText: 'Phone Number',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    keyboardType: TextInputType.phone,
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Please enter phone number';
-                      }
-                      // Basic phone number validation
-                      if (!RegExp(r'^[0-9]{10}$').hasMatch(value.trim())) {
-                        return 'Please enter a valid 10-digit phone number';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Payment Method
-                  Text(
-                    'Payment Method',
-                    style: Theme.of(bottomSheetContext).textTheme.titleMedium,
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: RadioListTile<String>(
-                          title: const Text('Cash'),
-                          value: 'Cash',
-                          groupValue: localPaymentMethod,
-                          onChanged: (value) {
-                            setModalState(() {
-                              localPaymentMethod = value!;
-                            });
-                            // Update the state in the parent widget
-                            setState(() {
-                              _paymentMethod = value!;
-                            });
-                          },
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                      ),
-                      Expanded(
-                        child: RadioListTile<String>(
-                          title: const Text('UPI'),
-                          value: 'UPI',
-                          groupValue: localPaymentMethod,
-                          onChanged: (value) {
-                            setModalState(() {
-                              localPaymentMethod = value!;
-                            });
-                            // Update the state in the parent widget
-                            setState(() {
-                              _paymentMethod = value!;
-                            });
-                          },
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Order Notes
-                  TextField(
-                    controller: _notesController,
-                    decoration: InputDecoration(
-                      labelText: 'Order Notes',
-                      hintText: 'Add any special instructions...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    maxLines: 2,
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Confirm Button
-                  ElevatedButton(
-                    onPressed: () {
-                      // Close the bottom sheet
-                      Navigator.pop(bottomSheetContext);
-
-                      // Use a microtask to ensure state is updated
-                      Future.microtask(() {
-                        onConfirm();
-                      });
-                    },
-                    child: const Text('Confirm'),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 
@@ -469,7 +480,7 @@ class _CartScreenState extends State<CartScreen> {
 
           return Column(
             children: [
-              // Cart items list
+              
               Expanded(
                 flex: 2,
                 child: ListView.builder(
@@ -492,9 +503,9 @@ class _CartScreenState extends State<CartScreen> {
                 ),
               ),
 
-              // Customer details and payment section
+              
 
-              // Summary and actions
+              
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -549,7 +560,7 @@ class _CartScreenState extends State<CartScreen> {
                     const SizedBox(height: 16),
                     Row(
                       children: [
-                        // Print Button
+                        
                         Expanded(
                           flex: 1,
                           child: AnimatedButton(
@@ -563,9 +574,9 @@ class _CartScreenState extends State<CartScreen> {
                                 Theme.of(
                                   context,
                                 ).colorScheme.onSecondaryContainer,
-                            child: Row(
+                            child: const Row(
                               mainAxisAlignment: MainAxisAlignment.center,
-                              children: const [
+                              children: [
                                 Icon(Icons.print),
                                 SizedBox(width: 8),
                                 Text('Print'),
@@ -574,7 +585,7 @@ class _CartScreenState extends State<CartScreen> {
                           ),
                         ),
                         const SizedBox(width: 12),
-                        // Order Button
+                        
                         Expanded(
                           flex: 2,
                           child: AnimatedButton(
@@ -614,8 +625,8 @@ class _CartScreenState extends State<CartScreen> {
                   Navigator.pop(context);
                   Provider.of<CartProvider>(context, listen: false).clearCart();
                 },
-                child: const Text('Clear'),
                 style: TextButton.styleFrom(foregroundColor: Colors.red),
+                child: const Text('Clear'),
               ),
             ],
           ),

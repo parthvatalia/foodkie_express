@@ -51,11 +51,11 @@ class UpdateChecker {
                       backgroundColor: Colors.green,
                     ),
                   );
-                  // launchUrl(
-                  //   Uri.parse(
-                  //       "https://play.google.com/store/apps/details?id=com.infinite.ballsort.ball_sort_challenge"),
-                  //   mode: LaunchMode.externalApplication,
-                  // );
+                  
+                  
+                  
+                  
+                  
                 },
                 child: const Text('Update Now'),
               ),

@@ -11,7 +11,7 @@ class ProfileService {
 
   String get _userId => _auth.currentUser?.uid ?? '';
 
-  // Get restaurant profile
+  
   Future<RestaurantProfile?> getRestaurantProfile() async {
     final doc = await _firestore
         .collection('users')
@@ -28,14 +28,14 @@ class ProfileService {
     return RestaurantProfile.fromMap(data['restaurantProfile']);
   }
 
-  // Create or update restaurant profile
+  
   Future<void> saveRestaurantProfile(
       RestaurantProfile profile,
       {File? logoFile}
       ) async {
     Map<String, dynamic> profileData = profile.toMap();
 
-    // Upload logo if provided
+    
     if (logoFile != null) {
       final logoUrl = await _uploadLogo(logoFile);
       profileData['logoUrl'] = logoUrl;
@@ -49,7 +49,7 @@ class ProfileService {
     }, SetOptions(merge: true));
   }
 
-  // Upload logo
+  
   Future<String> _uploadLogo(File logoFile) async {
     final ref = _storage.ref().child('restaurantLogos/$_userId/logo.jpg');
 
@@ -57,7 +57,7 @@ class ProfileService {
     return await ref.getDownloadURL();
   }
 
-  // Get business hours
+  
   Future<Map<String, dynamic>?> getBusinessHours() async {
     final doc = await _firestore
         .collection('users')
@@ -74,7 +74,7 @@ class ProfileService {
     return data['businessHours'] as Map<String, dynamic>;
   }
 
-  // Save business hours
+  
   Future<void> saveBusinessHours(Map<String, dynamic> hours) async {
     await _firestore
         .collection('users')
@@ -84,7 +84,7 @@ class ProfileService {
     }, SetOptions(merge: true));
   }
 
-  // Get print settings
+  
   Future<Map<String, dynamic>?> getPrintSettings() async {
     final doc = await _firestore
         .collection('users')
@@ -101,7 +101,7 @@ class ProfileService {
     return data['printSettings'] as Map<String, dynamic>;
   }
 
-  // Save print settings
+  
   Future<void> savePrintSettings(Map<String, dynamic> settings) async {
     await _firestore
         .collection('users')
@@ -111,7 +111,7 @@ class ProfileService {
     }, SetOptions(merge: true));
   }
 
-  // Save device token for notifications
+  
   Future<void> saveDeviceToken(String token) async {
     await _firestore
         .collection('users')
@@ -121,7 +121,7 @@ class ProfileService {
     }, SetOptions(merge: true));
   }
 
-  // Remove device token
+  
   Future<void> removeDeviceToken(String token) async {
     await _firestore
         .collection('users')
