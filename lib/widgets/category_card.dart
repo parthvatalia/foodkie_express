@@ -5,19 +5,14 @@ class CategoryCard extends StatelessWidget {
   final CategoryModel category;
   final VoidCallback onTap;
 
-  const CategoryCard({
-    Key? key,
-    required this.category,
-    required this.onTap,
-  }) : super(key: key);
+  const CategoryCard({Key? key, required this.category, required this.onTap})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Card(
       elevation: 3,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(8),
@@ -31,12 +26,12 @@ class CategoryCard extends StatelessWidget {
                 size: 40,
                 color: Theme.of(context).colorScheme.primary,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               Text(
                 category.name,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -45,7 +40,7 @@ class CategoryCard extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
-                    '${category.subCategories.length} subcategories',
+                    '${category.subCategories.length} sub-categories',
                     style: Theme.of(context).textTheme.bodySmall,
                     textAlign: TextAlign.center,
                   ),
@@ -65,9 +60,13 @@ class CategoryCard extends StatelessWidget {
       return Icons.local_pizza;
     } else if (name.contains('burger') || name.contains('sandwich')) {
       return Icons.lunch_dining;
-    } else if (name.contains('drink') || name.contains('beverage') || name.contains('juice')) {
+    } else if (name.contains('drink') ||
+        name.contains('beverage') ||
+        name.contains('juice')) {
       return Icons.local_drink;
-    } else if (name.contains('dessert') || name.contains('sweet') || name.contains('cake')) {
+    } else if (name.contains('dessert') ||
+        name.contains('sweet') ||
+        name.contains('cake')) {
       return Icons.cake;
     } else if (name.contains('soup') || name.contains('salad')) {
       return Icons.soup_kitchen;

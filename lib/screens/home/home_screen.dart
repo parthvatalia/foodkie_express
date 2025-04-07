@@ -325,6 +325,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Text(
+                  'Quick Actions',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(height: 8),
+              _buildQuickActions(),
               const SizedBox(height: 8),
 
               // Categories Section
@@ -342,18 +353,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SizedBox(height: 10),
 
-              // Quick Actions
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Text(
-                  'Quick Actions',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                ),
-              ),
-              const SizedBox(height: 8),
-              _buildQuickActions(),
+
             ],
           ),
         );
@@ -418,27 +418,29 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         }
 
-        // Display categories in a horizontal ListView with a fixed height
-        return SizedBox(
-          height: 140, // Adjust this height as needed
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: categories.length,
-            padding: EdgeInsets.symmetric(horizontal: 10),
-            separatorBuilder: (context, index) => const SizedBox(width: 8),
-            itemBuilder: (context, index) {
-              return CategoryCard(
-                category: categories[index],
-                onTap: () {
-                  Navigator.pushNamed(
-                    context,
-                    AppRoutes.menu,
-                    arguments: {'categoryId': categories[index].id},
-                  );
-                },
-              );
-            },
+        return GridView.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            childAspectRatio: 0.8
           ),
+          scrollDirection: Axis.vertical,
+          shrinkWrap: true,
+          itemCount: categories.length,
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          itemBuilder: (context, index) {
+            return CategoryCard(
+              category: categories[index],
+              onTap: () {
+                Navigator.pushNamed(
+                  context,
+                  AppRoutes.menu,
+                  arguments: {'categoryId': categories[index].id},
+                );
+              },
+            );
+          },
         );
       },
     );
@@ -447,11 +449,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildQuickActions() {
     return GridView.count(
       shrinkWrap: true,
-      padding: EdgeInsets.all(8),
+      padding: const EdgeInsets.all(8),
       physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
-      childAspectRatio:
-          MediaQuery.of(context).size.shortestSide < 600 ? 1.5 : 2.5,
+      crossAxisCount: 4,
+      childAspectRatio: 1,
       crossAxisSpacing: 10,
       mainAxisSpacing: 10,
       children: [
@@ -490,26 +491,31 @@ class _HomeScreenState extends State<HomeScreen> {
     required Color color,
     required VoidCallback onTap,
   }) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(2.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: color, size: 32),
-              const SizedBox(height: 8),
-              Text(
-                title,
-                style: Theme.of(context).textTheme.titleMedium,
-                textAlign: TextAlign.center,
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withOpacity(0.4)),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 28),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: color,
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
