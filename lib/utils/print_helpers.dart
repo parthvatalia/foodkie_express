@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:foodkie_express/utils/printer_services.dart';
-
 import '../screens/settings/bluetooth_printer_screen.dart';
 
 Future<void> checkAndSetupPrinter(BuildContext context) async {
   final printerService = PrinterService();
 
-  
+  // Check if Bluetooth is enabled
   bool bluetoothEnabled = await printerService.isBluetoothEnabled();
   if (!bluetoothEnabled) {
     bool enabled = await printerService.requestEnableBluetooth();
@@ -18,11 +17,11 @@ Future<void> checkAndSetupPrinter(BuildContext context) async {
     }
   }
 
-  
+  // Check if a printer is already saved
   Map<String, String>? savedPrinter = await printerService.getSavedBluetoothPrinter();
 
   if (savedPrinter != null) {
-    
+    // Try to connect to the saved printer
     bool connected = await printerService.isPrinterConnected();
 
     if (connected) {
@@ -36,7 +35,7 @@ Future<void> checkAndSetupPrinter(BuildContext context) async {
     }
   }
 
-  
+  // If no printer is connected or saved, show the printer selection screen
   if (context.mounted) {
     Navigator.push(
       context,
